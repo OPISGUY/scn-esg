@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +23,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-quo$6##l@9=sbvn9t8z%+1g4(ybhdzv#(di4un&k8=z=d$()&_'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-quo$6##l@9=sbvn9t8z%+1g4(ybhdzv#(di4un&k8=z=d$()&_')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# ALLOWED_HOSTS configuration for production
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,scn-esg-production.up.railway.app,.up.railway.app').split(',') if host.strip()]
+
+# Add Railway-specific host detection
+if os.getenv('RAILWAY_ENVIRONMENT'):
+    ALLOWED_HOSTS.extend([
+        'scn-esg-production.up.railway.app',
+        '.up.railway.app',
+        '.railway.app'
+    ])
 
 
 # Application definition
@@ -72,7 +82,7 @@ ROOT_URLCONF = 'scn_esg_platform.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -91,12 +101,18 @@ WSGI_APPLICATION = 'scn_esg_platform.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Use PostgreSQL in production (Railway), SQLite in development
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -173,11 +189,32 @@ SIMPLE_JWT = {
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
+    origin.strip() for origin in os.getenv(
+        'DJANGO_CORS_ALLOWED_ORIGINS', 
+        'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175,https://scn-esg-platform.vercel.app'
+    ).split(',') if origin.strip()
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Additional CORS settings for development and production debugging
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only for development
+if not DEBUG:
+    # In production, add common Vercel patterns
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^https://.*\.vercel\.app$",  # Allow all Vercel apps
+    ]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # API Documentation
 SPECTACULAR_SETTINGS = {
@@ -198,14 +235,23 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
-# Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
-DEFAULT_FROM_EMAIL = 'noreply@scn-esg-platform.com'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+# Email Configuration - Production Ready
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'  # or your email provider
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+DEFAULT_FROM_EMAIL = 'SCN ESG Platform <noreply@scnesg.com>'
+EMAIL_SUBJECT_PREFIX = '[SCN ESG] '
+
+# Email verification settings
+EMAIL_VERIFICATION_TIMEOUT = 24 * 60 * 60  # 24 hours
+PASSWORD_RESET_TIMEOUT = 2 * 60 * 60  # 2 hours
 
 # Caching Configuration
 CACHES = {
@@ -232,7 +278,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
 # AI Configuration (Phase 5)
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', None)
+GEMINI_API_KEY = os.getenv('GOOGLE_AI_API_KEY', None)
 ENABLE_AI_FEATURES = os.getenv('ENABLE_AI_FEATURES', 'False').lower() == 'true'
 
 # AI Service Configuration

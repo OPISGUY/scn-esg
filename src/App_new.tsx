@@ -1,23 +1,20 @@
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { HelpProvider } from './contexts/HelpContext';
-import AuthLayout from './components/auth/AuthLayout';
-import UserOnboarding from './components/UserOnboarding';
+import LoginPage from './components/LoginPage';
+import Onboarding from './components/Onboarding';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import CarbonCalculator from './components/CarbonCalculator';
 import EwasteTracker from './components/EwasteTracker';
 import ImpactViewer from './components/ImpactViewer';
-import EnhancedCarbonOffsets from './components/EnhancedCarbonOffsets';
+import CarbonOffsets from './components/CarbonOffsets';
 import Reports from './components/Reports';
 import AIInsights from './components/AIInsights';
 import ConversationalDataEntry from './components/ConversationalDataEntry';
 import CSRDCompliance from './components/CSRDCompliance';
-import HelpButton from './components/HelpButton';
-import { HelpTooltipPortal } from './components/HelpTooltip';
 
 function AppContent() {
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const { isAuthenticated, user, isLoading, completeOnboarding } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -36,8 +33,8 @@ function AppContent() {
   // Show login page if not authenticated
   if (!isAuthenticated) {
     return (
-      <AuthLayout 
-        onComplete={() => {
+      <LoginPage 
+        onSuccess={() => {
           // Check if this is first login and show onboarding
           if (user?.isFirstLogin) {
             setShowOnboarding(true);
@@ -50,54 +47,60 @@ function AppContent() {
   // Show onboarding for first-time users
   if (showOnboarding || user?.isFirstLogin) {
     return (
-      <UserOnboarding 
+      <Onboarding 
         onComplete={() => {
           setShowOnboarding(false);
+          completeOnboarding();
         }}
       />
     );
   }
 
-  const renderView = () => {
+  // Map user roles to component expected types
+  const getUserRole = (): 'admin' | 'decision_maker' => {
+    if (user?.role === 'decision_maker') return 'decision_maker';
+    return 'admin'; // default for admin and sustainability_manager
+  };
+
+  const renderCurrentView = () => {
+    const userRole = getUserRole();
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard onViewChange={setCurrentView} />;
+        return <Dashboard onViewChange={setCurrentView} userRole={userRole} />;
       case 'calculator':
         return <CarbonCalculator onViewChange={setCurrentView} />;
-      case 'conversational':
-        return <ConversationalDataEntry />;
       case 'ewaste':
         return <EwasteTracker />;
       case 'impact':
         return <ImpactViewer />;
       case 'offsets':
-        return <EnhancedCarbonOffsets />;
+        return <CarbonOffsets />;
       case 'reports':
         return <Reports />;
       case 'ai-insights':
         return <AIInsights />;
+      case 'conversational':
+        return <ConversationalDataEntry onDataExtracted={(data) => console.log('Extracted data:', data)} />;
       case 'compliance':
         return <CSRDCompliance />;
       default:
-        return <Dashboard onViewChange={setCurrentView} />;
+        return <Dashboard onViewChange={setCurrentView} userRole={userRole} />;
     }
   };
 
   return (
-    <Layout currentView={currentView} onViewChange={setCurrentView}>
-      {renderView()}
-      <HelpButton />
-      <HelpTooltipPortal />
-    </Layout>
+    <div className="min-h-screen bg-gray-50">
+      <Layout currentView={currentView} onViewChange={setCurrentView} userRole={getUserRole()}>
+        {renderCurrentView()}
+      </Layout>
+    </div>
   );
 }
 
 function App() {
   return (
     <AuthProvider>
-      <HelpProvider>
-        <AppContent />
-      </HelpProvider>
+      <AppContent />
     </AuthProvider>
   );
 }

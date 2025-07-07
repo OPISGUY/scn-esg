@@ -1,0 +1,21 @@
+# Frontend files - ignore for Railway backend deployment
+package.json
+package-lock.json
+node_modules/
+src/
+public/
+index.html
+vite.config.ts
+tailwind.config.js
+postcss.config.js
+tsconfig*.json
+eslint.config.js
+vercel.json
+
+# Documentation files
+*.md
+!backend/README.md
+
+# Other deployment configs
+deploy*.ps1
+deploy*.sh

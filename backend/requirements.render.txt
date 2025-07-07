@@ -1,3 +1,5 @@
+# Render-optimized requirements
+# Core Django
 Django==4.2.7
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
@@ -7,21 +9,32 @@ dj-database-url==2.1.0
 django-extensions==3.2.3
 Pillow==10.4.0
 whitenoise==6.6.0
-gunicorn==21.2.0
 drf-spectacular==0.26.5
 setuptools==69.5.1
 
-# Phase 4 Dependencies
+# Production server
+gunicorn==21.2.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Rate limiting
 django-ratelimit==4.1.0
+
+# Background tasks (Redis-based for Render)
 celery==5.3.4
 redis==5.0.1
+
+# Data processing
 pandas==2.2.0
 openpyxl==3.1.5
-
-# Phase 5 AI Dependencies  
-google-generativeai==0.8.3
 numpy==1.26.0
 
-# Production Dependencies
-psycopg2-binary==2.9.9
-sentry-sdk==1.39.1
+# AI Services
+google-generativeai==0.8.3
+
+# Monitoring (optional for free tier)
+# sentry-sdk==1.39.1
+
+# Additional Render optimizations
+python-dotenv==1.0.0

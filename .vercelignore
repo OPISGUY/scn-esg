@@ -1,0 +1,13 @@
+backend/
+*.py
+*.pyc
+__pycache__/
+.env*
+node_modules/
+.git/
+*.md
+railway.json
+nixpacks.toml
+Dockerfile
+deploy*.ps1
+deploy*.sh

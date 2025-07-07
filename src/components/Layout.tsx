@@ -10,26 +10,28 @@ import {
   X,
   Leaf,
   User,
-  Settings,
   Bell,
   HelpCircle,
   Brain,
   MessageCircle,
-  Shield
+  Shield,
+  LogOut
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
   currentView: string;
   onViewChange: (view: string) => void;
-  userRole?: 'admin' | 'decision_maker';
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange, userRole = 'admin' }) => {
+const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const { user, logout } = useAuth();
 
-  const adminNavigation = [
+  // For now, use a unified navigation - role-based navigation can be added later
+  const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: BarChart3, description: 'Overview of your carbon footprint and SCN impact' },
     { id: 'calculator', name: 'Carbon Calculator', icon: Calculator, description: 'Calculate your GHG Protocol compliant footprint' },
     { id: 'conversational', name: 'Smart Data Entry', icon: MessageCircle, description: 'AI-powered conversational data entry' },
@@ -40,17 +42,6 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange, us
     { id: 'ai-insights', name: 'AI Insights', icon: Brain, description: 'AI-powered validation, benchmarking, and recommendations' },
     { id: 'reports', name: 'Reports', icon: FileText, description: 'Generate professional sustainability reports' },
   ];
-
-  const executiveNavigation = [
-    { id: 'dashboard', name: 'Executive Dashboard', icon: BarChart3, description: 'High-level sustainability performance overview' },
-    { id: 'impact', name: 'Impact Overview', icon: TrendingUp, description: 'Partnership impact and achievements' },
-    { id: 'compliance', name: 'Compliance Status', icon: Shield, description: 'CSRD compliance readiness and status' },
-    { id: 'ai-insights', name: 'AI Insights', icon: Brain, description: 'AI-powered benchmarking and strategic recommendations' },
-    { id: 'offsets', name: 'Carbon Offsets', icon: ShoppingCart, description: 'Complete your carbon neutrality journey' },
-    { id: 'reports', name: 'Reports', icon: FileText, description: 'Download executive reports for stakeholders' },
-  ];
-
-  const navigation = userRole === 'decision_maker' ? executiveNavigation : adminNavigation;
 
   const getStepNumber = (viewId: string) => {
     const stepMap: { [key: string]: number } = {
@@ -144,10 +135,17 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange, us
                 </div>
                 <div className="hidden sm:block">
                   <div className="text-sm font-medium text-gray-900">
-                    {userRole === 'decision_maker' ? 'Executive View' : 'Admin View'}
+                    {user?.first_name} {user?.last_name}
                   </div>
-                  <div className="text-xs text-gray-500">Tech Solutions Ltd</div>
+                  <div className="text-xs text-gray-500">{user?.company || user?.email}</div>
                 </div>
+                <button
+                  onClick={logout}
+                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
               
               {/* Mobile menu button */}

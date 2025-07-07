@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "scn-esg-platform",
   "builds": [
     {
       "src": "package.json",
@@ -10,30 +9,22 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "env": {
-    "VITE_API_URL": "@vite_api_url",
     "VITE_APP_NAME": "SCN ESG Platform",
-    "VITE_ENVIRONMENT": "production"
+    "VITE_ENVIRONMENT": "production",
+    "VITE_API_URL": "https://scn-esg-production.up.railway.app"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "@vite_api_url",
       "VITE_APP_NAME": "SCN ESG Platform",
-      "VITE_ENVIRONMENT": "production"
-    }
-  },
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "@vercel/node"
+      "VITE_ENVIRONMENT": "production",
+      "VITE_API_URL": "https://scn-esg-production.up.railway.app"
     }
   },
   "headers": [

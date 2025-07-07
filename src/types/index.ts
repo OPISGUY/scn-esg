@@ -30,7 +30,28 @@ export interface CarbonOffset {
   description: string;
   image: string;
   available: number;
-  category?: 'reuse' | 'sequestration' | 'social';
+  category: string;
+  sequestrationPeriod?: number;
+  features?: string[];
+  permanence?: 'low' | 'medium' | 'high' | 'very-high' | 'ultra-high' | 'millennial' | 'eternal';
+  verification?: string;
+}
+
+export interface OffsetRecommendation {
+  name: string;
+  totalCost: number;
+  averagePrice: number;
+  credits: Array<{
+    credit: CarbonOffset;
+    percentage: number;
+  }>;
+  description: string;
+}
+
+export interface OffsetPreset {
+  tonnes: number;
+  label: string;
+  description: string;
 }
 
 export interface ImpactMetrics {
