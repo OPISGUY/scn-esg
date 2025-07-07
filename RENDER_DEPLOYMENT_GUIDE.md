@@ -23,7 +23,7 @@ Root Directory: backend
 cd backend && pip install -r requirements.py313.txt && python manage.py collectstatic --noinput && python manage.py migrate
 
 # Start Command:
-cd backend && gunicorn scn_esg_platform.wsgi:application --host 0.0.0.0 --port $PORT
+cd backend && gunicorn scn_esg_platform.wsgi:application --bind 0.0.0.0:$PORT
 
 # Alternative for older Python versions:
 # Build Command: cd backend && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
