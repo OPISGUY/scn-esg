@@ -28,7 +28,29 @@ def health_check(request):
         'environment': 'production' if not settings.DEBUG else 'development'
     })
 
+def api_root(request):
+    """API root endpoint with available endpoints"""
+    return JsonResponse({
+        'message': 'SCN ESG Platform API',
+        'version': '7.0.0',
+        'status': 'live',
+        'endpoints': {
+            'health': '/api/v1/health/',
+            'auth': '/api/v1/auth/',
+            'users': '/api/v1/users/',
+            'companies': '/api/v1/companies/',
+            'carbon': '/api/v1/carbon/',
+            'ewaste': '/api/v1/ewaste/',
+            'analytics': '/api/v1/analytics/',
+            'admin': '/admin/',
+            'compliance': '/compliance/'
+        }
+    })
+
 urlpatterns = [
+    # Root API endpoint
+    path('', api_root, name='api_root'),
+    
     path('admin/', admin.site.urls),
     
     # Health check endpoint
@@ -41,7 +63,7 @@ urlpatterns = [
     path('api/v1/carbon/', include('carbon.urls')),
     path('api/v1/ewaste/', include('ewaste.urls')),
     path('api/v1/analytics/', include('analytics.urls')),
-    path('', include('compliance.urls')),
+    path('compliance/', include('compliance.urls')),
 ]
 
 # Serve media files during development
