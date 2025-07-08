@@ -29,9 +29,16 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-quo$6##l@9=sbvn9t8z
 DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() == 'true'
 
 # ALLOWED_HOSTS configuration for production
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,scn-esg-production.up.railway.app,.up.railway.app').split(',') if host.strip()]
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',') if host.strip()]
 
-# Add Railway-specific host detection
+# Add Render-specific host detection
+if os.getenv('RENDER'):
+    ALLOWED_HOSTS.extend([
+        '.onrender.com',
+        'scn-esg-backend.onrender.com'
+    ])
+
+# Add Railway-specific host detection (keep for backwards compatibility)
 if os.getenv('RAILWAY_ENVIRONMENT'):
     ALLOWED_HOSTS.extend([
         'scn-esg-production.up.railway.app',

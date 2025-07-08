@@ -18,4 +18,7 @@ python manage.py migrate --noinput
 echo "📁 Collecting static files..."
 python manage.py collectstatic --noinput
 
+echo "👤 Creating test users for login..."
+python create_test_users.py
+
 echo "✅ Build completed successfully!"
