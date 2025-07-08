@@ -28,34 +28,66 @@ export class PDFReportService {
 
   async generateReport(data: ReportData): Promise<void> {
     try {
+      // Validate required data
+      if (!data) {
+        throw new Error('No data provided for PDF generation');
+      }
+      
+      // Provide defaults for missing data
+      const reportData: ReportData = {
+        companyName: data.companyName || 'Unknown Company',
+        reportingPeriod: data.reportingPeriod || { start: '2024-01-01', end: '2024-12-31' },
+        carbonFootprint: data.carbonFootprint || {
+          scope1: 0,
+          scope2: 0,
+          scope3: 0,
+          total: 0,
+          breakdown: {}
+        },
+        carbonBalance: data.carbonBalance || {
+          grossEmissions: 0,
+          scnOffsets: 0,
+          netEmissions: 0,
+          neutralityPercentage: 0
+        },
+        impactMetrics: data.impactMetrics || {
+          carbonSaved: 0,
+          treesPlanted: 0,
+          renewableEnergy: 0,
+          wasteRecycled: 0
+        },
+        ewasteEntries: data.ewasteEntries || [],
+        generatedAt: data.generatedAt || new Date().toISOString()
+      };
+      
       // Cover Page
-      this.addCoverPage(data);
+      this.addCoverPage(reportData);
       
       // Executive Summary
       this.addNewPage();
-      this.addExecutiveSummary(data);
+      this.addExecutiveSummary(reportData);
       
       // Carbon Footprint Breakdown
       this.addNewPage();
-      this.addCarbonFootprintSection(data);
+      this.addCarbonFootprintSection(reportData);
       
       // Carbon Balance Sheet
       this.addNewPage();
-      this.addCarbonBalanceSheet(data);
+      this.addCarbonBalanceSheet(reportData);
       
       // SCN Impact Summary
       this.addNewPage();
-      this.addSCNImpactSummary(data);
+      this.addSCNImpactSummary(reportData);
       
       // Methodology & Compliance
       this.addNewPage();
-      this.addMethodologySection(data);
+      this.addMethodologySection(reportData);
       
       // Download the PDF
-      this.pdf.save(`${data.companyName}-ESG-Report-${data.reportingPeriod.start}-${data.reportingPeriod.end}.pdf`);
+      this.pdf.save(`${reportData.companyName}-ESG-Report-${reportData.reportingPeriod.start}-${reportData.reportingPeriod.end}.pdf`);
     } catch (error) {
       console.error('Error generating PDF report:', error);
-      throw new Error('Failed to generate PDF report');
+      throw new Error(`Failed to generate PDF report: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -220,6 +252,19 @@ Data Quality: All Scope 1 and 2 emissions are based on primary data (actual cons
   private addCarbonBalanceSheet(data: ReportData): void {
     this.addSectionHeader('CARBON BALANCE SHEET');
     
+    // Validate data exists
+    if (!data.carbonBalance) {
+      this.addWrappedText('Carbon balance data not available', 14);
+      this.currentY += 20;
+      return;
+    }
+    
+    // Default values for missing data
+    const grossEmissions = data.carbonBalance.grossEmissions || 0;
+    const scnOffsets = data.carbonBalance.scnOffsets || 0;
+    const netEmissions = data.carbonBalance.netEmissions || 0;
+    const neutralityPercentage = data.carbonBalance.neutralityPercentage || 0;
+    
     // Balance sheet visual
     this.pdf.setDrawColor(200, 200, 200);
     this.pdf.setLineWidth(1);
@@ -231,7 +276,7 @@ Data Quality: All Scope 1 and 2 emissions are based on primary data (actual cons
     this.pdf.setFontSize(12);
     this.pdf.setFont('helvetica', 'bold');
     this.pdf.text('GROSS EMISSIONS', this.margin + 2, this.currentY + 8);
-    this.pdf.text(`${data.carbonBalance.grossEmissions.toFixed(1)} tCO₂e`, this.margin + 2, this.currentY + 16);
+    this.pdf.text(`${grossEmissions.toFixed(1)} tCO₂e`, this.margin + 2, this.currentY + 16);
     
     // Minus sign
     this.pdf.setTextColor(0, 0, 0);
@@ -245,7 +290,7 @@ Data Quality: All Scope 1 and 2 emissions are based on primary data (actual cons
     this.pdf.setFontSize(12);
     this.pdf.setFont('helvetica', 'bold');
     this.pdf.text('SCN OFFSETS', this.margin + 82, this.currentY + 8);
-    this.pdf.text(`${data.carbonBalance.scnOffsets.toFixed(1)} tCO₂e`, this.margin + 82, this.currentY + 16);
+    this.pdf.text(`${scnOffsets.toFixed(1)} tCO₂e`, this.margin + 82, this.currentY + 16);
     
     // Equals sign
     this.pdf.setTextColor(0, 0, 0);
@@ -253,14 +298,14 @@ Data Quality: All Scope 1 and 2 emissions are based on primary data (actual cons
     this.pdf.text('=', this.margin + 140, this.currentY + 12);
     
     // Net Emissions
-    const netColor = data.carbonBalance.netEmissions <= 0 ? [34, 197, 94] : [249, 115, 22]; // green or orange
+    const netColor = netEmissions <= 0 ? [34, 197, 94] : [249, 115, 22]; // green or orange
     this.pdf.setFillColor(netColor[0], netColor[1], netColor[2]);
     this.pdf.rect(this.margin + 160, this.currentY, 50, 20, 'F');
     this.pdf.setTextColor(255, 255, 255);
     this.pdf.setFontSize(12);
     this.pdf.setFont('helvetica', 'bold');
     this.pdf.text('NET EMISSIONS', this.margin + 162, this.currentY + 8);
-    this.pdf.text(`${data.carbonBalance.netEmissions.toFixed(1)} tCO₂e`, this.margin + 162, this.currentY + 16);
+    this.pdf.text(`${netEmissions.toFixed(1)} tCO₂e`, this.margin + 162, this.currentY + 16);
     
     this.currentY += 40;
     
@@ -268,7 +313,7 @@ Data Quality: All Scope 1 and 2 emissions are based on primary data (actual cons
     this.pdf.setTextColor(0, 0, 0);
     this.pdf.setFontSize(14);
     this.pdf.setFont('helvetica', 'bold');
-    this.pdf.text(`Carbon Neutrality Progress: ${data.carbonBalance.neutralityPercentage.toFixed(1)}%`, this.margin, this.currentY);
+    this.pdf.text(`Carbon Neutrality Progress: ${neutralityPercentage.toFixed(1)}%`, this.margin, this.currentY);
     
     // Progress bar
     this.currentY += 10;
@@ -276,7 +321,7 @@ Data Quality: All Scope 1 and 2 emissions are based on primary data (actual cons
     this.pdf.setLineWidth(1);
     this.pdf.rect(this.margin, this.currentY, 150, 8);
     
-    const progressWidth = (data.carbonBalance.neutralityPercentage / 100) * 150;
+    const progressWidth = Math.max(0, Math.min(150, (neutralityPercentage / 100) * 150));
     this.pdf.setFillColor(34, 197, 94);
     this.pdf.rect(this.margin, this.currentY, progressWidth, 8, 'F');
     

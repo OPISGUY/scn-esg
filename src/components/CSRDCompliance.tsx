@@ -53,7 +53,7 @@ const CSRDCompliance: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedDatapoint, setExpandedDatapoint] = useState<number | null>(null);
 
-  const API_BASE = 'http://127.0.0.1:8000/api/v1/compliance';
+  const API_BASE = `${import.meta.env.VITE_API_URL || 'https://scn-esg-backend.onrender.com'}/api/v1/compliance`;
 
   useEffect(() => {
     if (activeTab === 'datapoints') {

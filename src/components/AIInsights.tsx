@@ -68,7 +68,8 @@ const AIInsights: React.FC = () => {
 
   const callAIService = async (endpoint: string, data?: any) => {
     try {
-      const response = await fetch(`/api/v1/carbon/ai/${endpoint}/`, {
+      const API_BASE = import.meta.env.VITE_API_URL || 'https://scn-esg-backend.onrender.com';
+      const response = await fetch(`${API_BASE}/api/v1/carbon/ai/${endpoint}/`, {
         method: data ? 'POST' : 'GET',
         headers: {
           'Content-Type': 'application/json',
