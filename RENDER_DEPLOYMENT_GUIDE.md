@@ -19,14 +19,11 @@ Root Directory: backend
 
 ### 3. Build & Start Commands
 ```bash
-# Build Command (Python 3.13 compatible):
-cd backend && pip install -r requirements.py313.txt && python manage.py collectstatic --noinput && python manage.py migrate && python create_test_users.py
+# Build Command (UPDATED):
+cd backend && pip install -r requirements.py313.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python create_test_users.py
 
 # Start Command:
 cd backend && gunicorn scn_esg_platform.wsgi:application --bind 0.0.0.0:$PORT
-
-# Alternative for older Python versions:
-# Build Command: cd backend && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python create_test_users.py
 ```
 
 ### 4. Environment Variables
