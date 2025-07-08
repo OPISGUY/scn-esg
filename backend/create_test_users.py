@@ -69,7 +69,7 @@ def create_test_users():
             password='test123',
             company=test_company
         )
-        test_user.email_verified = True
+        test_user.is_email_verified = True
         test_user.save()
         print("✅ Test user created: test@scn.com / test123")
 
@@ -85,7 +85,7 @@ def create_test_users():
             password='business123',
             company=business_company
         )
-        business_user.email_verified = True
+        business_user.is_email_verified = True
         business_user.save()
         print("✅ Business user created: business@scn.com / business123")
 
