@@ -43,17 +43,17 @@ def create_test_users():
     if User.objects.filter(email='admin@scn.com').exists():
         print("Admin user already exists!")
     else:
-        # Create admin user
+        # Create admin user with properly hashed password
         admin_user = User.objects.create_user(
             username='admin@scn.com',
             email='admin@scn.com',
+            password='admin123',  # This will be properly hashed by create_user
             first_name='Admin',
             last_name='User',
-            password='admin123',
             is_staff=True,
             is_superuser=True
         )
-        admin_user.email_verified = True
+        admin_user.is_email_verified = True
         admin_user.save()
         print("✅ Admin user created: admin@scn.com / admin123")
 
