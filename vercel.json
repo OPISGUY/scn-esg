@@ -18,13 +18,13 @@
   "env": {
     "VITE_APP_NAME": "SCN ESG Platform",
     "VITE_ENVIRONMENT": "production",
-    "VITE_API_URL": "https://scn-esg-production.up.railway.app"
+    "VITE_API_URL": "https://scn-esg-backend.onrender.com"
   },
   "build": {
     "env": {
       "VITE_APP_NAME": "SCN ESG Platform",
       "VITE_ENVIRONMENT": "production",
-      "VITE_API_URL": "https://scn-esg-production.up.railway.app"
+      "VITE_API_URL": "https://scn-esg-backend.onrender.com"
     }
   },
   "headers": [
