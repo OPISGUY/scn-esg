@@ -12,6 +12,7 @@ urlpatterns = [
     path('auth/logout/', auth_views.logout, name='logout'),
     path('auth/profile/', auth_views.profile, name='profile'),
     path('auth/health/', auth_views.health, name='health'),
+    path('auth/complete-onboarding/', auth_views.complete_onboarding, name='complete_onboarding'),
     
     # Email verification endpoints
     path('auth/send-verification/', email_views.send_verification_email_view, name='send_verification'),

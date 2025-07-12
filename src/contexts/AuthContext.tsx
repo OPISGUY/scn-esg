@@ -25,6 +25,16 @@ interface AuthContextType {
   verifyEmail: (token: string) => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (token: string, password: string) => Promise<void>;
+  completeOnboarding: (onboardingData: OnboardingData) => Promise<void>;
+}
+
+interface OnboardingData {
+  company_name: string;
+  industry: string;
+  employees: number;
+  sustainability_goals: string[];
+  reporting_requirements: string[];
+  challenges: string[];
 }
 
 interface RegisterData {
@@ -178,6 +188,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await authService.confirmPasswordReset(token, password);
   };
 
+  const completeOnboarding = async (onboardingData: OnboardingData) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const baseUrl = API_URL.replace(/\/+$/, '');
+    const response = await fetch(`${baseUrl}/api/v1/users/auth/complete-onboarding/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(onboardingData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Onboarding completion failed');
+    }
+
+    const data = await response.json();
+    setUser(data.user);
+  };
+
   const value = {
     user,
     isAuthenticated: !!user,
@@ -189,6 +224,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     verifyEmail,
     sendPasswordReset,
     confirmPasswordReset,
+    completeOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

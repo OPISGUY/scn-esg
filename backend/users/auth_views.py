@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .serializers import UserSerializer
 from .email_views import send_verification_email
+from companies.models import Company
 
 User = get_user_model()
 
@@ -171,3 +172,51 @@ def health(request):
         'message': 'SCN ESG Platform API is running',
         'version': '7.5.0'
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complete_onboarding(request):
+    """Complete user onboarding with company and preference data"""
+    try:
+        user = request.user
+        data = request.data
+        
+        # Validate required onboarding data
+        required_fields = ['company_name', 'industry', 'employees', 'sustainability_goals']
+        for field in required_fields:
+            if not data.get(field):
+                return Response({
+                    'error': f'{field} is required for onboarding'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create or get company
+        company, created = Company.objects.get_or_create(
+            name=data['company_name'],
+            defaults={
+                'industry': data['industry'],
+                'employees': data['employees']
+            }
+        )
+        
+        # Update user with company and onboarding preferences
+        user.company = company
+        user.is_onboarding_complete = True
+        user.dashboard_preferences = {
+            'sustainability_goals': data.get('sustainability_goals', []),
+            'reporting_requirements': data.get('reporting_requirements', []),
+            'challenges': data.get('challenges', []),
+            'onboarding_completed_at': timezone.now().isoformat()
+        }
+        user.save()
+        
+        return Response({
+            'message': 'Onboarding completed successfully',
+            'user': UserSerializer(user).data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': 'Onboarding completion failed',
+            'details': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

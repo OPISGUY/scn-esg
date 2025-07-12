@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { HelpProvider } from './contexts/HelpContext';
 import AuthLayout from './components/auth/AuthLayout';
-import UserOnboarding from './components/UserOnboarding';
+import OnboardingWizard from './components/onboarding/OnboardingWizard';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import CarbonCalculator from './components/CarbonCalculator';
@@ -19,7 +19,6 @@ import { HelpTooltipPortal } from './components/HelpTooltip';
 function AppContent() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
-  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Show loading spinner while checking auth
   if (isLoading) {
@@ -35,27 +34,12 @@ function AppContent() {
 
   // Show login page if not authenticated
   if (!isAuthenticated) {
-    return (
-      <AuthLayout 
-        onComplete={() => {
-          // Check if this is first login and show onboarding
-          if (user?.isFirstLogin) {
-            setShowOnboarding(true);
-          }
-        }} 
-      />
-    );
+    return <AuthLayout />;
   }
 
-  // Show onboarding for first-time users
-  if (showOnboarding || user?.isFirstLogin) {
-    return (
-      <UserOnboarding 
-        onComplete={() => {
-          setShowOnboarding(false);
-        }}
-      />
-    );
+  // Show onboarding for users who haven't completed it (except demo user)
+  if (user && !user.is_onboarding_complete && user.email !== 'business@scn.com') {
+    return <OnboardingWizard />;
   }
 
   const renderView = () => {
