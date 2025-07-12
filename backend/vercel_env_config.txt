@@ -1,0 +1,11 @@
+
+# Add these environment variables to your Vercel deployment:
+
+VITE_API_URL=https://scn-esg-backend.onrender.com
+VITE_BACKEND_URL=https://scn-esg-backend.onrender.com
+NEXT_PUBLIC_API_URL=https://scn-esg-backend.onrender.com
+NEXT_PUBLIC_BACKEND_URL=https://scn-esg-backend.onrender.com
+
+# For local development (.env.local):
+VITE_API_URL=https://scn-esg-backend.onrender.com
+VITE_BACKEND_URL=https://scn-esg-backend.onrender.com
