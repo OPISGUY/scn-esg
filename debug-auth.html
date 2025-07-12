@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Debug Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 3px; font-family: monospace; white-space: pre-wrap; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 SCN ESG Authentication Debug Tool</h1>
+    
+    <div class="debug-section info">
+        <h3>Environment Detection</h3>
+        <div id="env-info"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>URL Construction Test</h3>
+        <div id="url-info"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>Backend Health Check</h3>
+        <button onclick="testBackendHealth()">Test Backend Health</button>
+        <div id="health-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>Authentication Test</h3>
+        <div>
+            <input type="email" id="email" placeholder="Email" value="business@scn.com">
+            <input type="password" id="password" placeholder="Password" value="business123">
+            <button onclick="testLogin()">Test Login</button>
+        </div>
+        <div id="login-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>CORS Test</h3>
+        <button onclick="testCORS()">Test CORS</button>
+        <div id="cors-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>Network Analysis</h3>
+        <button onclick="testNetworkPaths()">Test All Network Paths</button>
+        <div id="network-results"></div>
+    </div>
+
+    <script>
+        // Environment detection
+        function detectEnvironment() {
+            const envInfo = {
+                userAgent: navigator.userAgent,
+                location: window.location.href,
+                origin: window.location.origin,
+                host: window.location.host,
+                protocol: window.location.protocol
+            };
+            
+            document.getElementById('env-info').innerHTML = `
+                <div class="log">${JSON.stringify(envInfo, null, 2)}</div>
+            `;
+        }
+
+        // URL construction test
+        function testURLConstruction() {
+            const possibleUrls = [
+                'https://scn-esg-backend.onrender.com',
+                'https://scn-esg-backend.onrender.com/',
+                'http://localhost:8000',
+                'http://localhost:8000/'
+            ];
+
+            let results = '<h4>Testing URL Construction:</h4>';
+            
+            possibleUrls.forEach(baseUrl => {
+                const cleanUrl = baseUrl.replace(/\/+$/, '');
+                const loginUrl = `${cleanUrl}/api/v1/users/auth/login/`;
+                results += `<div class="log">Base: ${baseUrl} → Clean: ${cleanUrl} → Final: ${loginUrl}</div>`;
+            });
+
+            document.getElementById('url-info').innerHTML = results;
+        }
+
+        // Backend health check
+        async function testBackendHealth() {
+            const healthDiv = document.getElementById('health-results');
+            healthDiv.innerHTML = '<div class="log">Testing backend health...</div>';
+            
+            const baseUrls = [
+                'https://scn-esg-backend.onrender.com',
+                'https://scn-esg-backend.onrender.com/'
+            ];
+
+            let results = '';
+            
+            for (const baseUrl of baseUrls) {
+                const cleanUrl = baseUrl.replace(/\/+$/, '');
+                const endpoints = [
+                    '/',
+                    '/api/v1/health/',
+                    '/api/v1/users/auth/health/'
+                ];
+                
+                for (const endpoint of endpoints) {
+                    const testUrl = `${cleanUrl}${endpoint}`;
+                    try {
+                        const start = Date.now();
+                        const response = await fetch(testUrl, { 
+                            method: 'GET',
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        const time = Date.now() - start;
+                        
+                        results += `<div class="log ${response.ok ? 'success' : 'error'}">
+${testUrl}
+Status: ${response.status} ${response.statusText}
+Time: ${time}ms
+Headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}
+</div>`;
+                        
+                        if (response.ok) {
+                            try {
+                                const data = await response.text();
+                                results += `<div class="log">Response: ${data.substring(0, 500)}${data.length > 500 ? '...' : ''}</div>`;
+                            } catch (e) {
+                                results += `<div class="log">Could not parse response body</div>`;
+                            }
+                        }
+                    } catch (error) {
+                        results += `<div class="log error">${testUrl}\nError: ${error.message}</div>`;
+                    }
+                }
+            }
+            
+            healthDiv.innerHTML = results;
+        }
+
+        // Login test
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultsDiv = document.getElementById('login-results');
+            
+            resultsDiv.innerHTML = '<div class="log">Testing login...</div>';
+            
+            const baseUrls = [
+                'https://scn-esg-backend.onrender.com',
+                'https://scn-esg-backend.onrender.com/'
+            ];
+            
+            const endpoints = [
+                '/api/v1/users/auth/login/',
+                '/api/v1/auth/login/'
+            ];
+            
+            let results = '';
+            
+            for (const baseUrl of baseUrls) {
+                const cleanUrl = baseUrl.replace(/\/+$/, '');
+                
+                for (const endpoint of endpoints) {
+                    const testUrl = `${cleanUrl}${endpoint}`;
+                    
+                    try {
+                        const start = Date.now();
+                        const response = await fetch(testUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ email, password })
+                        });
+                        const time = Date.now() - start;
+                        
+                        results += `<div class="log ${response.ok ? 'success' : 'error'}">
+URL: ${testUrl}
+Status: ${response.status} ${response.statusText}
+Time: ${time}ms
+Request URL: ${response.url}
+</div>`;
+                        
+                        try {
+                            const data = await response.text();
+                            results += `<div class="log">Response: ${data}</div>`;
+                        } catch (e) {
+                            results += `<div class="log">Could not read response body</div>`;
+                        }
+                        
+                    } catch (error) {
+                        results += `<div class="log error">
+URL: ${testUrl}
+Error: ${error.message}
+</div>`;
+                    }
+                }
+            }
+            
+            resultsDiv.innerHTML = results;
+        }
+
+        // CORS test
+        async function testCORS() {
+            const corsDiv = document.getElementById('cors-results');
+            corsDiv.innerHTML = '<div class="log">Testing CORS...</div>';
+            
+            const testUrl = 'https://scn-esg-backend.onrender.com/api/v1/users/auth/login/';
+            
+            try {
+                // Test preflight
+                const preflightResponse = await fetch(testUrl, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                let results = `<div class="log ${preflightResponse.ok ? 'success' : 'error'}">
+CORS Preflight Test:
+Status: ${preflightResponse.status}
+Headers: ${JSON.stringify(Object.fromEntries(preflightResponse.headers.entries()), null, 2)}
+</div>`;
+                
+                corsDiv.innerHTML = results;
+                
+            } catch (error) {
+                corsDiv.innerHTML = `<div class="log error">CORS Test Failed: ${error.message}</div>`;
+            }
+        }
+
+        // Network paths test
+        async function testNetworkPaths() {
+            const networkDiv = document.getElementById('network-results');
+            networkDiv.innerHTML = '<div class="log">Testing all network paths...</div>';
+            
+            // Test with different protocols and formats
+            const testUrls = [
+                'https://scn-esg-backend.onrender.com/api/v1/users/auth/login/',
+                'https://scn-esg-backend.onrender.com//api/v1/users/auth/login/',
+                'https://scn-esg-backend.onrender.com///api/v1/users/auth/login/',
+                'http://scn-esg-backend.onrender.com/api/v1/users/auth/login/'
+            ];
+            
+            let results = '';
+            
+            for (const url of testUrls) {
+                try {
+                    const start = Date.now();
+                    const response = await fetch(url, {
+                        method: 'HEAD',
+                        mode: 'cors'
+                    });
+                    const time = Date.now() - start;
+                    
+                    results += `<div class="log ${response.ok ? 'success' : 'error'}">
+URL: ${url}
+Status: ${response.status}
+Final URL: ${response.url}
+Time: ${time}ms
+</div>`;
+                } catch (error) {
+                    results += `<div class="log error">
+URL: ${url}
+Error: ${error.message}
+</div>`;
+                }
+            }
+            
+            networkDiv.innerHTML = results;
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            detectEnvironment();
+            testURLConstruction();
+        };
+    </script>
+</body>
+</html>

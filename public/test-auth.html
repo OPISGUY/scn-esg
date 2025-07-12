@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vercel Frontend Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Vercel Frontend Authentication Test</h1>
+    
+    <div class="test-section">
+        <h3>Environment Variables</h3>
+        <div id="env-info"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Authentication Test</h3>
+        <button onclick="testAuth()">Test Login</button>
+        <div id="auth-results"></div>
+    </div>
+    
+    <script>
+        // Check environment variables (Vite specific)
+        function checkEnvironment() {
+            const envInfo = {
+                'import.meta.env.VITE_API_URL': typeof import !== 'undefined' ? import.meta.env?.VITE_API_URL : 'Not available',
+                'import.meta.env.VITE_BACKEND_URL': typeof import !== 'undefined' ? import.meta.env?.VITE_BACKEND_URL : 'Not available',
+                'import.meta.env.NODE_ENV': typeof import !== 'undefined' ? import.meta.env?.NODE_ENV : 'Not available',
+                'import.meta.env.MODE': typeof import !== 'undefined' ? import.meta.env?.MODE : 'Not available',
+                'window.location.origin': window.location.origin,
+                'User Agent': navigator.userAgent
+            };
+            
+            document.getElementById('env-info').innerHTML = `<div class="log">${JSON.stringify(envInfo, null, 2)}</div>`;
+        }
+        
+        async function testAuth() {
+            const resultsDiv = document.getElementById('auth-results');
+            resultsDiv.innerHTML = '<div class="log">Testing authentication...</div>';
+            
+            // Use hardcoded URL first to test
+            const API_URL = 'https://scn-esg-backend.onrender.com';
+            const loginUrl = `${API_URL}/api/v1/users/auth/login/`;
+            
+            console.log('🔍 LOGIN DEBUG INFO:');
+            console.log('API_URL:', API_URL);
+            console.log('Login URL:', loginUrl);
+            console.log('Origin:', window.location.origin);
+            
+            try {
+                const response = await fetch(loginUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'business@scn.com',
+                        password: 'business123'
+                    }),
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                let result = `
+<div class="log">
+URL: ${loginUrl}
+Status: ${response.status} ${response.statusText}
+Origin: ${window.location.origin}
+Response Headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}
+</div>`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result += `<div class="log success">✅ LOGIN SUCCESSFUL!\nUser: ${data.user?.email}\nToken: ${data.access?.substring(0, 30)}...</div>`;
+                } else {
+                    const errorText = await response.text();
+                    result += `<div class="log error">❌ LOGIN FAILED!\nError: ${errorText}</div>`;
+                }
+                
+                resultsDiv.innerHTML = result;
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultsDiv.innerHTML = `<div class="log error">❌ FETCH ERROR: ${error.message}</div>`;
+            }
+        }
+        
+        // Initialize
+        window.onload = checkEnvironment;
+    </script>
+</body>
+</html>

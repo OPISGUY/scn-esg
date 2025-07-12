@@ -59,6 +59,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuthStatus();
   }, []);
 
+  // Helper function to construct URLs safely
+  const buildUrl = (endpoint: string) => {
+    const baseUrl = API_URL.replace(/\/+$/, ''); // Remove trailing slashes
+    const cleanEndpoint = endpoint.replace(/^\/+/, '/'); // Ensure single leading slash
+    const fullUrl = `${baseUrl}${cleanEndpoint}`;
+    console.log(`🔗 URL Construction: Base="${baseUrl}" + Endpoint="${cleanEndpoint}" = "${fullUrl}"`);
+    return fullUrl;
+  };
+
   const checkAuthStatus = async () => {
     try {
       const token = localStorage.getItem('access_token');

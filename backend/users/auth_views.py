@@ -52,8 +52,11 @@ def register(request):
         )
         
         # Set additional fields if provided
-        if data.get('company'):
-            user.company = data['company']
+        # Note: company should be set via a separate endpoint after user creation
+        # For now, we'll skip company assignment during registration
+        if data.get('company') and data['company'].strip():
+            # Company assignment will be handled in onboarding flow
+            pass
         
         # Set role if provided
         if data.get('role') and data['role'] in ['admin', 'sustainability_manager', 'decision_maker', 'viewer']:
