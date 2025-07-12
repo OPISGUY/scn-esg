@@ -63,7 +63,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const token = localStorage.getItem('access_token');
       if (token) {
-        const response = await fetch(`${API_URL}/api/v1/users/auth/profile/`, {
+        const baseUrl = API_URL.replace(/\/+$/, ''); // Remove any trailing slashes
+        const response = await fetch(`${baseUrl}/api/v1/users/auth/profile/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -87,7 +88,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await fetch(`${API_URL}/api/v1/users/auth/login/`, {
+    // Debug logging
+    console.log('🔍 LOGIN DEBUG INFO:');
+    console.log('API_URL:', API_URL);
+    console.log('Environment variables:', {
+      VITE_API_URL: import.meta.env.VITE_API_URL,
+      VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+      NODE_ENV: import.meta.env.NODE_ENV,
+      MODE: import.meta.env.MODE
+    });
+    
+    // Ensure no trailing slash on API_URL and construct the URL properly
+    const baseUrl = API_URL.replace(/\/+$/, ''); // Remove any trailing slashes
+    const loginUrl = `${baseUrl}/api/v1/users/auth/login/`;
+    console.log('Full login URL:', loginUrl);
+    
+    const response = await fetch(loginUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -95,8 +111,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       body: JSON.stringify({ email, password }),
     });
 
+    console.log('Response status:', response.status);
+    console.log('Response URL:', response.url);
+
     if (!response.ok) {
       const error = await response.json();
+      console.error('Login error:', error);
       throw new Error(error.error || 'Login failed');
     }
 
@@ -107,7 +127,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (userData: RegisterData) => {
-    const response = await fetch(`${API_URL}/api/v1/users/auth/register/`, {
+    const baseUrl = API_URL.replace(/\/+$/, ''); // Remove any trailing slashes
+    const response = await fetch(`${baseUrl}/api/v1/users/auth/register/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
