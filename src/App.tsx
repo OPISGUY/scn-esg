@@ -38,7 +38,7 @@ function AppContent() {
   }
 
   // Show onboarding for users who haven't completed it (except demo user)
-  if (user && !user.is_onboarding_complete && user.email !== 'business@scn.com') {
+  if (user && !user.is_onboarding_complete && user.email !== 'demo@scn.com') {
     return <OnboardingWizard />;
   }
 

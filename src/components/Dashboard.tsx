@@ -25,7 +25,9 @@ import {
   Calendar,
   Globe,
   Award,
-  TrendingDown,
+  TrendingDow              <span className="text-blue-600 ml-2">
+                {user?.email === 'demo@scn.com' ? 'This is a demonstration account with sample data' : 'Exploring with sample data'}
+              </span>
   Activity
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -40,7 +42,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   const [showDemoMode, setShowDemoMode] = useState(false);
 
   // Check if user is the demo user or has real data
-  const isDemoUser = user?.email === 'business@scn.com';
+  const isDemoUser = user?.email === 'demo@scn.com';
   const hasRealData = isDemoUser; // Demo user always has data, others need to add data
 
   if (!hasRealData && !showDemoMode) {
