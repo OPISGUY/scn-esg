@@ -20,6 +20,17 @@ function AppContent() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
 
+  // Debug logging
+  console.log('🔍 APP DEBUG - User state:', {
+    isAuthenticated,
+    user: user ? {
+      email: user.email,
+      is_onboarding_complete: user.is_onboarding_complete,
+      isDemoUser: user.email === 'demo@scn.com'
+    } : null,
+    isLoading
+  });
+
   // Show loading spinner while checking auth
   if (isLoading) {
     return (

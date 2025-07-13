@@ -229,7 +229,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const data = await response.json();
       console.log('✅ Onboarding success:', data);
-      setUser(data.user);
+      console.log('🔄 Old user state:', user);
+      console.log('🔄 New user data from server:', data.user);
+      console.log('🔄 New is_onboarding_complete:', data.user?.is_onboarding_complete);
+      
+      if (data.user) {
+        setUser(data.user);
+        console.log('✅ User state updated successfully');
+      } else {
+        console.error('❌ No user data in response');
+        // Fallback: manually update the user state
+        setUser(prev => prev ? { ...prev, is_onboarding_complete: true } : null);
+        console.log('🔄 Manual user state update applied');
+      }
     } catch (error) {
       console.error('💥 Onboarding exception:', error);
       throw error;
