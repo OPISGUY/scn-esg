@@ -25,13 +25,10 @@ import {
   Calendar,
   Globe,
   Award,
-  TrendingDow              <span className="text-blue-600 ml-2">
-                {user?.email === 'demo@scn.com' ? 'This is a demonstration account with sample data' : 'Exploring with sample data'}
-              </span>
-  Activity
+  TrendingDown
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { calculateCarbonBalance, calculateStudentsSupported, getRealTimeImpactMetrics } from '../data/mockData';
+import { calculateCarbonBalance, getRealTimeImpactMetrics } from '../data/mockData';
 
 interface DashboardProps {
   onViewChange: (view: string) => void;
@@ -349,9 +346,8 @@ const FullDashboard: React.FC<DashboardProps & { isDemoMode: boolean }> = ({ onV
   const { user } = useAuth();
   const [carbonBalance] = useState(calculateCarbonBalance());
   const [impactMetrics] = useState(getRealTimeImpactMetrics());
-  const [studentData] = useState(calculateStudentsSupported());
 
-  const remainingEmissions = Math.max(0, carbonBalance.grossEmissions - carbonBalance.offsetsPurchased - carbonBalance.ewasteCredits);
+  const remainingEmissions = Math.max(0, carbonBalance.grossEmissions - carbonBalance.scnOffsets, 0);
   const offsetCost = remainingEmissions * 25;
 
   const handleAutoOffset = () => {
@@ -421,18 +417,18 @@ const FullDashboard: React.FC<DashboardProps & { isDemoMode: boolean }> = ({ onV
                 </div>
                 
                 <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-6 text-center">
-                  <div className="text-3xl font-bold text-green-300 mb-2">{carbonBalance.offsetsPurchased.toFixed(1)}t</div>
-                  <div className="text-sm text-green-200">Offsets Purchased</div>
+                  <div className="text-3xl font-bold text-green-300 mb-2">{carbonBalance.scnOffsets.toFixed(1)}t</div>
+                  <div className="text-sm text-green-200">SCN Offsets</div>
                   <div className="w-full bg-green-500/20 rounded-full h-2 mt-3">
-                    <div className="bg-green-400 h-2 rounded-full" style={{width: `${(carbonBalance.offsetsPurchased / carbonBalance.grossEmissions) * 100}%`}}></div>
+                    <div className="bg-green-400 h-2 rounded-full" style={{width: `${(carbonBalance.scnOffsets / carbonBalance.grossEmissions) * 100}%`}}></div>
                   </div>
                 </div>
                 
                 <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-6 text-center">
-                  <div className="text-3xl font-bold text-blue-300 mb-2">{carbonBalance.ewasteCredits.toFixed(1)}t</div>
-                  <div className="text-sm text-blue-200">E-waste Credits</div>
+                  <div className="text-3xl font-bold text-blue-300 mb-2">{carbonBalance.neutralityPercentage.toFixed(1)}%</div>
+                  <div className="text-sm text-blue-200">Carbon Neutral</div>
                   <div className="w-full bg-blue-500/20 rounded-full h-2 mt-3">
-                    <div className="bg-blue-400 h-2 rounded-full" style={{width: `${(carbonBalance.ewasteCredits / carbonBalance.grossEmissions) * 100}%`}}></div>
+                    <div className="bg-blue-400 h-2 rounded-full" style={{width: `${carbonBalance.neutralityPercentage}%`}}></div>
                   </div>
                 </div>
                 
@@ -522,7 +518,7 @@ const FullDashboard: React.FC<DashboardProps & { isDemoMode: boolean }> = ({ onV
           <MetricCard
             icon={<Leaf className="w-6 h-6 text-green-600" />}
             title="CO₂ Saved"
-            value={`${impactMetrics.totalCO2Saved.toFixed(1)}t`}
+            value={`${impactMetrics.totalCO2Avoided.toFixed(1)}t`}
             change="+12%"
             gradient="from-green-500 to-emerald-600"
           />
