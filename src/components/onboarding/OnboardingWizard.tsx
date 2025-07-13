@@ -30,6 +30,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = () => {
   const { user, completeOnboarding } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<CompanyData>({
     name: user?.company || '',
     industry: '',
@@ -90,24 +91,35 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = () => {
 
   const handleComplete = async () => {
     setIsSubmitting(true);
+    setError(null);
+    
     try {
+      console.log('🚀 Starting onboarding completion...');
+      console.log('Form data:', formData);
+      
       // Convert company size to number of employees
       const employees = convertSizeToEmployees(formData.size);
       
-      await completeOnboarding({
+      const onboardingData = {
         company_name: formData.name,
         industry: formData.industry,
         employees,
         sustainability_goals: formData.sustainabilityGoals,
         reporting_requirements: formData.reportingRequirements,
         challenges: formData.currentChallenges
-      });
+      };
       
+      console.log('📝 Sending onboarding data:', onboardingData);
+      
+      await completeOnboarding(onboardingData);
+      
+      console.log('✅ Onboarding completed successfully!');
       // Component will automatically redirect to dashboard when 
       // user.is_onboarding_complete becomes true
     } catch (error) {
-      console.error('Onboarding completion failed:', error);
-      alert('Failed to complete onboarding. Please try again.');
+      console.error('❌ Onboarding completion failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to complete onboarding. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -181,39 +193,51 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = () => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-8 bg-gray-50 rounded-b-2xl border-t">
-          <div className="flex items-center space-x-4">
+        <div className="p-8 bg-gray-50 rounded-b-2xl border-t">
+          {/* Error Display */}
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center">
+                <div className="w-5 h-5 text-red-600 mr-2">⚠️</div>
+                <div className="text-red-800 text-sm">{error}</div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={prevStep}
+                disabled={currentStep === 0}
+                className="flex items-center px-4 py-2 text-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed hover:text-gray-800"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Previous
+              </button>
+            </div>
+
             <button
-              onClick={prevStep}
-              disabled={currentStep === 0}
-              className="flex items-center px-4 py-2 text-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed hover:text-gray-800"
+              onClick={nextStep}
+              disabled={!isStepValid() || isSubmitting}
+              className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Previous
+              {currentStep === steps.length - 1 ? (
+                <>
+                  {isSubmitting ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  ) : (
+                    <Save className="w-4 h-4 mr-2" />
+                  )}
+                  {isSubmitting ? 'Setting up...' : 'Complete Setup'}
+                </>
+              ) : (
+                <>
+                  Continue
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
             </button>
           </div>
-
-          <button
-            onClick={nextStep}
-            disabled={!isStepValid() || isSubmitting}
-            className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {currentStep === steps.length - 1 ? (
-              <>
-                {isSubmitting ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                ) : (
-                  <Save className="w-4 h-4 mr-2" />
-                )}
-                {isSubmitting ? 'Setting up...' : 'Complete Setup'}
-              </>
-            ) : (
-              <>
-                Continue
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
-          </button>
         </div>
       </div>
     </div>

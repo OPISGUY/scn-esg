@@ -189,28 +189,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const completeOnboarding = async (onboardingData: OnboardingData) => {
+    console.log('🚀 ONBOARDING DEBUG INFO:');
+    console.log('Onboarding data:', onboardingData);
+    
     const token = localStorage.getItem('access_token');
     if (!token) {
+      console.error('❌ No authentication token found');
       throw new Error('No authentication token found');
     }
+    console.log('🔑 Token found:', token.substring(0, 50) + '...');
 
+    // Use the same API_URL logic as login function
+    const API_URL = import.meta.env.VITE_API_URL || 
+                    import.meta.env.VITE_BACKEND_URL || 
+                    'https://scn-esg-backend.onrender.com';
+    
     const baseUrl = API_URL.replace(/\/+$/, '');
-    const response = await fetch(`${baseUrl}/api/v1/users/auth/complete-onboarding/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(onboardingData),
-    });
+    const onboardingUrl = `${baseUrl}/api/v1/users/auth/complete-onboarding/`;
+    console.log('🌐 Onboarding URL:', onboardingUrl);
+    
+    try {
+      const response = await fetch(onboardingUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(onboardingData),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Onboarding completion failed');
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response URL:', response.url);
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('❌ Onboarding error:', error);
+        throw new Error(error.error || 'Onboarding completion failed');
+      }
+
+      const data = await response.json();
+      console.log('✅ Onboarding success:', data);
+      setUser(data.user);
+    } catch (error) {
+      console.error('💥 Onboarding exception:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    setUser(data.user);
   };
 
   const value = {
