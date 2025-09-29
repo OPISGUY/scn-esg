@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'django_ratelimit',
     
     # Local apps
-    'accounts',
     'analytics',
     'carbon',
     'companies',
