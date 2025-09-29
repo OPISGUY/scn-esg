@@ -283,11 +283,12 @@ const CompanyInfoStep: React.FC<any> = ({ formData, updateFormData }) => {
   ];
 
   const companySizes = [
-    { value: 'startup', label: 'Startup (1-10 employees)' },
-    { value: 'small', label: 'Small (11-50 employees)' },
-    { value: 'medium', label: 'Medium (51-250 employees)' },
-    { value: 'large', label: 'Large (251-1000 employees)' },
-    { value: 'enterprise', label: 'Enterprise (1000+ employees)' }
+    { value: '1-10', label: 'Startup (1-10 employees)' },
+    { value: '11-50', label: 'Small (11-50 employees)' },
+    { value: '51-200', label: 'Medium (51-200 employees)' },
+    { value: '201-500', label: 'Large (251-500 employees)' },
+    { value: '501-1000', label: 'Enterprise (501-1000 employees)' },
+    { value: '1000+', label: 'Enterprise (1000+ employees)' }
   ];
 
   return (

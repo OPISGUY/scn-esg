@@ -35,21 +35,21 @@ def create_users_via_api():
     test_users = [
         {
             "email": "admin@scn.com",
-            "password": "admin123", 
+            "password": "AdminPassword123!",
             "first_name": "Admin",
             "last_name": "User",
             "role": "admin"
         },
         {
             "email": "test@scn.com",
-            "password": "test123",
+            "password": "TestPassword123!",
             "first_name": "Test", 
             "last_name": "User",
             "role": "sustainability_manager"
         },
         {
             "email": "business@scn.com",
-            "password": "business123",
+            "password": "BusinessPassword123!",
             "first_name": "Business",
             "last_name": "Manager", 
             "role": "decision_maker"
@@ -66,7 +66,7 @@ def create_users_via_api():
                 f"{RENDER_URL}/api/v1/users/auth/register/",
                 headers={'Content-Type': 'application/json'},
                 json=user_data,
-                timeout=30
+                timeout=180
             )
             
             print(f"   📨 Status: {response.status_code}")
