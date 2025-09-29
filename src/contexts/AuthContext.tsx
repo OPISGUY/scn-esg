@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../services/auth';
+import { API_URL } from '../utils/apiConfig';
 
 interface User {
   id: string;
@@ -63,27 +64,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
   useEffect(() => {
     checkAuthStatus();
   }, []);
-
-  // Helper function to construct URLs safely
-  const buildUrl = (endpoint: string) => {
-    const baseUrl = API_URL.replace(/\/+$/, ''); // Remove trailing slashes
-    const cleanEndpoint = endpoint.replace(/^\/+/, '/'); // Ensure single leading slash
-    const fullUrl = `${baseUrl}${cleanEndpoint}`;
-    console.log(`🔗 URL Construction: Base="${baseUrl}" + Endpoint="${cleanEndpoint}" = "${fullUrl}"`);
-    return fullUrl;
-  };
 
   const checkAuthStatus = async () => {
     try {
       const token = localStorage.getItem('access_token');
       if (token) {
-        const baseUrl = API_URL.replace(/\/+$/, ''); // Remove any trailing slashes
-        const response = await fetch(`${baseUrl}/api/v1/users/auth/profile/`, {
+        const response = await fetch(`${API_URL}/api/v1/users/auth/profile/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -107,19 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login = async (email: string, password: string) => {
-    // Debug logging
-    console.log('🔍 LOGIN DEBUG INFO:');
-    console.log('API_URL:', API_URL);
-    console.log('Environment variables:', {
-      VITE_API_URL: import.meta.env.VITE_API_URL,
-      VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
-      NODE_ENV: import.meta.env.NODE_ENV,
-      MODE: import.meta.env.MODE
-    });
-    
-    // Ensure no trailing slash on API_URL and construct the URL properly
-    const baseUrl = API_URL.replace(/\/+$/, ''); // Remove any trailing slashes
-    const loginUrl = `${baseUrl}/api/v1/users/auth/login/`;
+    const loginUrl = `${API_URL}/api/v1/users/auth/login/`;
     console.log('Full login URL:', loginUrl);
     
     const response = await fetch(loginUrl, {
@@ -129,9 +106,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       },
       body: JSON.stringify({ email, password }),
     });
-
-    console.log('Response status:', response.status);
-    console.log('Response URL:', response.url);
 
     if (!response.ok) {
       const error = await response.json();
@@ -146,8 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (userData: RegisterData) => {
-    const baseUrl = API_URL.replace(/\/+$/, ''); // Remove any trailing slashes
-    const response = await fetch(`${baseUrl}/api/v1/users/auth/register/`, {
+    const response = await fetch(`${API_URL}/api/v1/users/auth/register/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -189,24 +162,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const completeOnboarding = async (onboardingData: OnboardingData) => {
-    console.log('🚀 ONBOARDING DEBUG INFO:');
-    console.log('Onboarding data:', onboardingData);
-    
     const token = localStorage.getItem('access_token');
     if (!token) {
-      console.error('❌ No authentication token found');
       throw new Error('No authentication token found');
     }
-    console.log('🔑 Token found:', token.substring(0, 50) + '...');
 
-    // Use the same API_URL logic as login function
-    const API_URL = import.meta.env.VITE_API_URL || 
-                    import.meta.env.VITE_BACKEND_URL || 
-                    'https://scn-esg-backend.onrender.com';
-    
-    const baseUrl = API_URL.replace(/\/+$/, '');
-    const onboardingUrl = `${baseUrl}/api/v1/users/auth/complete-onboarding/`;
-    console.log('🌐 Onboarding URL:', onboardingUrl);
+    const onboardingUrl = `${API_URL}/api/v1/users/auth/complete-onboarding/`;
     
     try {
       const response = await fetch(onboardingUrl, {
@@ -218,32 +179,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         body: JSON.stringify(onboardingData),
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response URL:', response.url);
-
       if (!response.ok) {
         const error = await response.json();
-        console.error('❌ Onboarding error:', error);
         throw new Error(error.error || 'Onboarding completion failed');
       }
 
       const data = await response.json();
-      console.log('✅ Onboarding success:', data);
-      console.log('🔄 Old user state:', user);
-      console.log('🔄 New user data from server:', data.user);
-      console.log('🔄 New is_onboarding_complete:', data.user?.is_onboarding_complete);
-      
       if (data.user) {
         setUser(data.user);
-        console.log('✅ User state updated successfully');
       } else {
-        console.error('❌ No user data in response');
-        // Fallback: manually update the user state
         setUser(prev => prev ? { ...prev, is_onboarding_complete: true } : null);
-        console.log('🔄 Manual user state update applied');
       }
     } catch (error) {
-      console.error('💥 Onboarding exception:', error);
+      console.error('Onboarding exception:', error);
       throw error;
     }
   };

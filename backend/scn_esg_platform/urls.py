@@ -57,7 +57,6 @@ urlpatterns = [
     path('api/v1/health/', health_check, name='health_check'),
     
     # API endpoints
-    path('api/v1/auth/', include('accounts.urls')),
     path('api/v1/companies/', include('companies.urls')),
     path('api/v1/users/', include('users.urls')),
     path('api/v1/carbon/', include('carbon.urls')),

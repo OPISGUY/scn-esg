@@ -1,4 +1,4 @@
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+import { API_URL } from '../utils/apiConfig';
 
 export interface EmailVerificationRequest {
   email: string;

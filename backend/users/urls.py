@@ -15,10 +15,10 @@ urlpatterns = [
     path('auth/complete-onboarding/', auth_views.complete_onboarding, name='complete_onboarding'),
     
     # Email verification endpoints
-    path('auth/send-verification/', email_views.send_verification_email_view, name='send_verification'),
-    path('auth/verify-email/', email_views.verify_email, name='verify_email'),
-    path('auth/forgot-password/', email_views.forgot_password, name='forgot_password'),
-    path('auth/reset-password/', email_views.reset_password, name='reset_password'),
+    path('email/send-verification/', email_views.send_verification_email_view, name='send_verification'),
+    path('email/verify/', email_views.verify_email, name='verify_email'),
+    path('email/password-reset/', email_views.forgot_password, name='forgot_password'),
+    path('email/password-reset-confirm/', email_views.reset_password, name='reset_password'),
     
     # User management
     path('', include(router.urls)),
