@@ -183,7 +183,13 @@ const SignupWizard: React.FC<SignupWizardProps> = ({ onSwitchToLogin, onComplete
       });
       onComplete?.();
     } catch (error: any) {
-      setErrors({ general: error.message || 'Registration failed. Please try again.' });
+      let errorMessage = error.message || 'Registration failed. Please try again.';
+      if (errorMessage.includes('common')) {
+        errorMessage = 'This password is too common. Please choose a more unique password to better protect your account.';
+      } else if (errorMessage.includes('email already exists')) {
+        errorMessage = 'An account with this email address already exists. Please try logging in instead.';
+      }
+      setErrors({ general: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -256,9 +262,7 @@ const SignupWizard: React.FC<SignupWizardProps> = ({ onSwitchToLogin, onComplete
                 </button>
               </div>
               {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
-              <p className="mt-2 text-xs text-gray-500">
-                Must contain at least 8 characters with uppercase, lowercase, and numbers
-              </p>
+              <PasswordStrengthIndicator password={formData.password} />
             </div>
 
             {/* Confirm Password */}
@@ -542,9 +546,16 @@ const SignupWizard: React.FC<SignupWizardProps> = ({ onSwitchToLogin, onComplete
 
           {/* General Error */}
           {errors.general && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <div className="text-red-700 text-sm">{errors.general}</div>
+            <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500" role="alert">
+              <div className="flex">
+                <div className="py-1">
+                  <AlertCircle className="h-6 w-6 text-red-500 mr-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-red-800">Registration Error</p>
+                  <p className="text-sm text-red-700">{errors.general}</p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -589,6 +600,49 @@ const SignupWizard: React.FC<SignupWizardProps> = ({ onSwitchToLogin, onComplete
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+const PasswordStrengthIndicator: React.FC<{ password: string }> = ({ password }) => {
+  const checks = [
+    {
+      id: 'length',
+      label: 'At least 8 characters',
+      test: (p: string) => p.length >= 8,
+    },
+    {
+      id: 'uppercase',
+      label: 'An uppercase letter',
+      test: (p: string) => /[A-Z]/.test(p),
+    },
+    {
+      id: 'lowercase',
+      label: 'A lowercase letter',
+      test: (p: string) => /[a-z]/.test(p),
+    },
+    {
+      id: 'number',
+      label: 'A number',
+      test: (p: string) => /\d/.test(p),
+    },
+  ];
+
+  return (
+    <div className="mt-2 space-y-1">
+      {checks.map(check => {
+        const passed = check.test(password);
+        return (
+          <div key={check.id} className={`flex items-center text-xs transition-colors duration-300 ${passed ? 'text-green-600' : 'text-gray-500'}`}>
+            {passed ? (
+              <CheckCircle className="w-3.5 h-3.5 mr-2 flex-shrink-0" />
+            ) : (
+              <div className="w-3.5 h-3.5 mr-2 flex-shrink-0 border-2 border-gray-400 rounded-full" />
+            )}
+            <span>{check.label}</span>
+          </div>
+        );
+      })}
     </div>
   );
 };

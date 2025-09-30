@@ -5,7 +5,8 @@
  * This ensures a single source of truth for the backend URL.
  */
 const getApiUrl = (): string => {
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  // Use VITE_API_URL if provided (for local dev), otherwise use relative path for production
+  const apiUrl = import.meta.env.VITE_API_URL || '';
   // Remove any trailing slashes to prevent URL construction issues
   return apiUrl.replace(/\/+$/, '');
 };

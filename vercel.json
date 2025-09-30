@@ -2,6 +2,14 @@
   "version": 2,
   "builds": [
     {
+      "src": "backend/scn_esg_platform/wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.11"
+      }
+    },
+    {
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -9,45 +17,24 @@
       }
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/api/(.*)",
+      "dest": "backend/scn_esg_platform/wsgi.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "env": {
-    "VITE_APP_NAME": "SCN ESG Platform",
-    "VITE_ENVIRONMENT": "production",
-    "VITE_API_URL": "https://scn-esg-backend.onrender.com"
+    "DJANGO_SETTINGS_MODULE": "scn_esg_platform.settings_render",
+    "VITE_API_URL": ""
   },
   "build": {
     "env": {
-      "VITE_APP_NAME": "SCN ESG Platform",
-      "VITE_ENVIRONMENT": "production",
-      "VITE_API_URL": "https://scn-esg-backend.onrender.com"
+      "DJANGO_SETTINGS_MODULE": "scn_esg_platform.settings_render",
+      "VITE_API_URL": ""
     }
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=31536000; includeSubDomains; preload"
-        }
-      ]
-    }
-  ]
+  }
 }
