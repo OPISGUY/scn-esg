@@ -1,0 +1,23 @@
+# SCN ESG Copilot Instructions
+
+- **Architecture snapshot:** React + Vite frontend lives under `src/`; Django REST backend sits in `backend/` (`scn_esg_platform` project). Services talk over `/api/v1/...` endpoints; keep parity with existing serializers before adding endpoints.
+- **Frontend entry:** `src/main.tsx` bootstraps `App.tsx` wrapped in `AuthProvider` and `HelpContext`; prefer editing `App.tsx`/`Layout.tsx` rather than legacy `App_new` variants.
+- **Component patterns:** Feature screens reside in `src/components/*` with descriptive names (e.g. `CSRDCompliance.tsx`, `AIInsights.tsx`); compose dashboards via sections inside `Layout.tsx` & Tailwind utility classes—stay within existing naming conventions.
+- **Auth & API access:** Authentication flows go through `src/contexts/AuthContext.tsx` and `services/auth.ts`; always build URLs with `buildApiUrl` from `utils/api.ts` so Vite env overrides (`VITE_API_URL` / `VITE_BACKEND_URL`) keep working.
+- **State & data:** Temporary data lives in `src/data/mockData.ts`; when wiring to real APIs, mirror TypeScript contracts from `src/types/index.ts` and update contexts instead of scattering local state.
+- **PDF/Reporting:** Use `PDFReportService` in `src/services/pdfService.ts` for new report sections; follow the existing pattern of creating helper methods that append to the jsPDF instance.
+- **Styling:** Tailwind is configured via `tailwind.config.js`; prefer utility classes over custom CSS, and place shared tweaks in `index.css`.
+- **Backend settings:** Local work expects `DJANGO_SETTINGS_MODULE=scn_esg_platform.settings_sqlite`; Render/Vercel deploys rely on `settings_render.py` with `dj_database_url` and CORS environment variables.
+- **Backend organization:** Apps like `carbon`, `ewaste`, and `compliance` follow DRF conventions—models/serializers/services/views separation. Business logic belongs in each app's `services.py` (e.g. compliance service layer) with async-friendly helpers when possible.
+- **Compliance tooling:** Seed ESRS data via `python backend/populate_esrs_datapoints.py` or `python manage.py sync_esrs_datapoints --source=local`; keep catalog IDs stable because React components assume them.
+- **AI integrations:** Gemini tests live in `backend/test_phase5_ai.py` and `backend/quick_ai_test.py`; expect `GOOGLE_AI_API_KEY` in the environment and reuse helper wrappers before introducing new API calls.
+- **Frontend dev loop:** From repo root run `npm install` once, then `npm run dev`; use `npm run lint` and `npm run typecheck` before committing UI changes.
+- **Backend dev loop:** Inside `backend/` install with `pip install -r requirements.txt`; run `python manage.py migrate` plus `python manage.py runserver`. Use `requirements.render.txt` when matching Render's slim runtime.
+- **Testing & smoke checks:** `python backend/test_compliance.py` validates ESRS services; `python backend/test_full_deployment.py` exercises Railway/Vercel endpoints and highlights missing environment variables; run `npm run build` to ensure Vite bundling stays clean.
+- **Debug helpers:** `backend/debug_*` scripts target auth and infrastructure issues—pick the one matching the host (e.g. `debug_production_auth.py` for Vercel).
+- **Deployment scripts:** PowerShell helpers (`deploy.ps1`, `deploy_render.ps1`, `deploy_fixed.ps1`) orchestrate student-pack deployments; cross-check `DEPLOYMENT_GUIDE.md` for exact CLI sequences (`railway up`, `vercel --prod`).
+- **Environment flags:** Minimum secrets include `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_CORS_ALLOWED_ORIGINS`, and Gemini keys backend-side, plus `VITE_API_URL` frontend-side.
+- **Docs worth reading:** `PROJECT_DOCUMENTATION.md` (architecture deep dive), `AUTHENTICATION_IMPLEMENTATION_PLAN.md` (login flow requirements), `AGENTS.md` (role hand-offs), and `DEPLOYMENT_GUIDE.md` (student-pack deployment).
+- **Pull request expectations:** Match conventional commits, run lint/typecheck + backend smoke tests, and surface any remaining manual steps (e.g., creating test users with `backend/create_demo_user.py`).
+- **When adding APIs:** Update `scn_esg_platform/urls.py`, create serializer + service + viewset, expose swagger metadata via DRF Spectacular, and document the endpoint in `PROJECT_DOCUMENTATION.md`.
+- **When wiring frontend to new APIs:** Fetch through contexts or dedicated services, store `access_token` in localStorage (per `AuthContext`), and handle token expiration by invoking the refresh endpoint before retrying.
