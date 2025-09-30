@@ -7,6 +7,6 @@
   "deploy": {
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10,
-    "startCommand": "cd /app && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:$PORT --workers 3 --timeout 120 --access-logfile - --error-logfile - scn_esg_platform.wsgi:application"
+    "startCommand": "cd /app && python manage.py migrate --noinput && python manage.py reset_test_user_passwords && python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:$PORT --workers 3 --timeout 120 --access-logfile - --error-logfile - scn_esg_platform.wsgi:application"
   }
 }
