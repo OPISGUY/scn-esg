@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { FileText, Download, Calendar, BarChart3, TrendingUp, Users, Scale, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileText, Download, Calendar, BarChart3, TrendingUp, Users, Scale, CheckCircle, AlertCircle, FileSpreadsheet, FileDown } from 'lucide-react';
 import { mockImpactMetrics, mockEwasteEntries, calculateCarbonBalance } from '../data/mockData';
 import { pdfService, ReportData } from '../services/pdfService';
 import { carbonService, CarbonFootprintData } from '../services/carbonService';
 import { useAuth } from '../contexts/AuthContext';
 import { EmissionsCharts } from './EmissionsCharts';
+import { exportToCSV, exportDetailedReport } from '../utils/exportUtils';
 
 const Reports = () => {
   const { user } = useAuth();
@@ -186,9 +187,38 @@ const Reports = () => {
 
       {/* Data Visualizations */}
       {!isLoading && user && footprints.length > 0 && (
-        <div className="mb-8">
-          <EmissionsCharts footprints={footprints} />
-        </div>
+        <>
+          <div className="mb-8">
+            <EmissionsCharts footprints={footprints} />
+          </div>
+
+          {/* Export Options */}
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Download className="w-5 h-5 text-green-600 mr-2" />
+              Export Data
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                onClick={() => exportToCSV(footprints, `${currentFootprint.companyName}-carbon-footprints`)}
+                className="flex items-center justify-center space-x-3 px-6 py-4 bg-green-50 hover:bg-green-100 text-green-700 font-medium rounded-lg border-2 border-green-200 hover:border-green-300 transition-all"
+              >
+                <FileSpreadsheet className="w-5 h-5" />
+                <span>Export to CSV</span>
+              </button>
+              <button
+                onClick={() => exportDetailedReport(footprints, currentFootprint.companyName, 'detailed-emissions-report')}
+                className="flex items-center justify-center space-x-3 px-6 py-4 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg border-2 border-blue-200 hover:border-blue-300 transition-all"
+              >
+                <FileDown className="w-5 h-5" />
+                <span>Detailed Text Report</span>
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mt-3">
+              Export your carbon footprint data in various formats for analysis, reporting, or archival purposes.
+            </p>
+          </div>
+        </>
       )}
 
       {!user && (
