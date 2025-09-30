@@ -979,6 +979,80 @@ The following files have been consolidated into this guide and can be moved to a
 
 ---
 
+---
+
+## Changelog
+
+### September 30, 2025 (Continued) - Carbon Footprint Management Enhancement
+
+**Implemented Features:**
+
+1. **Footprint History Component** (`src/components/FootprintHistory.tsx`)
+   - Comprehensive table view of all saved carbon footprints
+   - Sortable columns: reporting period, emissions by scope, total, status, created date
+   - Status badges with icons (draft, submitted, verified)
+   - Edit/delete functionality with confirmation modals
+   - Empty states and loading indicators
+   - Full integration with carbonService API
+
+2. **Data Visualization** (`src/components/EmissionsCharts.tsx`)
+   - **Trend Line Chart**: Multi-line chart showing emissions over time by scope + total
+   - **Scope Comparison Bar Chart**: Side-by-side comparison of scope 1/2/3 for latest period
+   - **Emissions Distribution Pie Chart**: Percentage breakdown by scope category
+   - Summary statistics: total records, latest total, highest scope, latest period
+   - Responsive charts using Recharts library
+   - Custom tooltips and legends
+
+3. **Data Export Utilities** (`src/utils/exportUtils.ts`)
+   - **CSV Export**: Structured spreadsheet with all footprint records
+   - **Detailed Text Report**: Comprehensive report with:
+     - Summary statistics (total, average emissions)
+     - Record-by-record breakdown
+     - Trend analysis (first vs. latest period comparison)
+     - Percentage change calculations
+   - Automatic filename generation with timestamps
+
+4. **Reports Component Enhancement**
+   - Integrated EmissionsCharts for visual analytics
+   - Added export buttons (CSV + detailed report)
+   - Real-time data from backend via carbonService
+   - Graceful fallbacks for missing data
+
+**Dependencies Added:**
+- `recharts@^2.x` - Professional charting library for React
+
+**Navigation Update:**
+- Added "Footprint History" menu item in Layout.tsx
+- Integrated history route in App.tsx
+
+**API Integration:**
+- All components use carbonService for data fetching
+- Full CRUD operations: getFootprints, createFootprint, updateFootprint, deleteFootprint
+- Auth headers with JWT token management
+
+**Files Modified:**
+- `src/components/Layout.tsx` - Added history navigation item
+- `src/App.tsx` - Added history route case
+- `src/components/Reports.tsx` - Integrated charts and export buttons
+- `package.json` - Added recharts dependency
+
+**Files Created:**
+- `src/components/FootprintHistory.tsx` (367 lines)
+- `src/components/EmissionsCharts.tsx` (297 lines)
+- `src/utils/exportUtils.ts` (153 lines)
+
+**Testing Status:**
+- ✅ TypeScript compilation successful
+- ✅ All components render without errors
+- ⏳ Pending: End-to-end testing in production deployment
+
+**Deployment:**
+- All changes committed and pushed to main branch
+- Vercel will auto-deploy frontend updates
+- Backend already has required API endpoints
+
+---
+
 **End of Implementation Guide**
 
 For questions or contributions, please open an issue or discussion on GitHub.
