@@ -49,7 +49,7 @@ const Reports = () => {
     if (footprints.length > 0) {
       const latest = footprints[0];
       return {
-        companyName: user?.companyName || user?.email?.split('@')[0] || 'Your Company',
+        companyName: user?.company || user?.first_name + ' ' + user?.last_name || user?.email?.split('@')[0] || 'Your Company',
         scope1: latest.scope1_emissions,
         scope2: latest.scope2_emissions,
         scope3: latest.scope3_emissions,
@@ -63,7 +63,7 @@ const Reports = () => {
       try {
         const data = JSON.parse(stored);
         return {
-          companyName: data.companyName || user?.companyName || 'Your Company',
+          companyName: data.companyName || user?.company || 'Your Company',
           scope1: data.scope1 || 0,
           scope2: data.scope2 || 0,
           scope3: data.scope3 || 0,
@@ -76,7 +76,7 @@ const Reports = () => {
 
     // Final fallback to zeros
     return {
-      companyName: user?.company_data?.name || user?.email?.split('@')[0] || 'Your Company',
+      companyName: user?.company || user?.email?.split('@')[0] || 'Your Company',
       scope1: 0,
       scope2: 0,
       scope3: 0,
@@ -92,7 +92,17 @@ const Reports = () => {
       const reportData: ReportData = {
         companyName: currentFootprint.companyName,
         reportingPeriod: { start: startDate, end: endDate },
-        carbonFootprint: currentFootprint,
+        carbonFootprint: {
+          id: footprints[0]?.id || 'temp-' + Date.now(),
+          companyName: currentFootprint.companyName,
+          reportingPeriod: startDate,
+          scope1: currentFootprint.scope1,
+          scope2: currentFootprint.scope2,
+          scope3: currentFootprint.scope3,
+          total: currentFootprint.total,
+          createdAt: footprints[0]?.created_at || new Date().toISOString(),
+          status: (footprints[0]?.status as 'draft' | 'submitted' | 'verified') || 'draft'
+        },
         carbonBalance: carbonBalance,
         impactMetrics: mockImpactMetrics,
         ewasteEntries: mockEwasteEntries,
