@@ -21,20 +21,14 @@
     {
       "src": "/api/(.*)",
       "dest": "backend/scn_esg_platform/wsgi.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
     }
   ],
   "env": {
-    "DJANGO_SETTINGS_MODULE": "scn_esg_platform.settings_render",
-    "VITE_API_URL": ""
+    "DJANGO_SETTINGS_MODULE": "scn_esg_platform.settings_render"
   },
   "build": {
     "env": {
-      "DJANGO_SETTINGS_MODULE": "scn_esg_platform.settings_render",
-      "VITE_API_URL": ""
+      "DJANGO_SETTINGS_MODULE": "scn_esg_platform.settings_render"
     }
   }
 }
