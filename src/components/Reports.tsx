@@ -4,6 +4,7 @@ import { mockImpactMetrics, mockEwasteEntries, calculateCarbonBalance } from '..
 import { pdfService, ReportData } from '../services/pdfService';
 import { carbonService, CarbonFootprintData } from '../services/carbonService';
 import { useAuth } from '../contexts/AuthContext';
+import { EmissionsCharts } from './EmissionsCharts';
 
 const Reports = () => {
   const { user } = useAuth();
@@ -180,6 +181,13 @@ const Reports = () => {
             <p className="text-amber-800 font-medium">{error}</p>
             <p className="text-amber-700 text-sm mt-1">Using local data for report generation</p>
           </div>
+        </div>
+      )}
+
+      {/* Data Visualizations */}
+      {!isLoading && user && footprints.length > 0 && (
+        <div className="mb-8">
+          <EmissionsCharts footprints={footprints} />
         </div>
       )}
 
