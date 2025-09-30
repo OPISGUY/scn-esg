@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
-import { Calculator, Zap, Car, Building, Users, Save, ArrowRight, Upload, FileText, AlertCircle } from 'lucide-react';
+import { Calculator, Zap, Car, Building, Save, ArrowRight, Upload, AlertCircle, CheckCircle } from 'lucide-react';
 import { calculateCO2FromElectricity, calculateCO2FromFuel, calculateScope3Simplified } from '../utils/calculations';
+import { carbonService } from '../services/carbonService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface CarbonCalculatorProps {
   onViewChange: (view: string) => void;
 }
 
 const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     // Company Info
     companyName: '',
@@ -76,8 +82,8 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
       total: total
     });
 
-    // Save to localStorage for use across the platform
-    localStorage.setItem('carbonFootprint', JSON.stringify({
+    // Save to localStorage for immediate use
+    const footprintData = {
       companyName: formData.companyName,
       reportingPeriod: formData.reportingPeriod,
       scope1: scope1Total,
@@ -87,7 +93,37 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
       calculatedAt: new Date().toISOString(),
       methodology: 'GHG Protocol Corporate Standard',
       emissionFactors: 'DEFRA/BEIS 2024'
-    }));
+    };
+    localStorage.setItem('carbonFootprint', JSON.stringify(footprintData));
+  };
+
+  const handleSaveFootprint = async () => {
+    if (!user) {
+      setSaveError('Please log in to save your carbon footprint');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      await carbonService.createFootprint({
+        reporting_period: formData.reportingPeriod,
+        scope1_emissions: results.scope1,
+        scope2_emissions: results.scope2,
+        scope3_emissions: results.scope3,
+        status: 'draft'
+      });
+
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000); // Reset after 3 seconds
+    } catch (error) {
+      console.error('Failed to save footprint:', error);
+      setSaveError(error instanceof Error ? error.message : 'Failed to save footprint');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const nextStep = () => {
@@ -583,10 +619,42 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
           
           <div className="flex items-center space-x-3">
             {currentStep === 5 && (
-              <button className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors duration-200 flex items-center space-x-2">
-                <Save className="w-4 h-4" />
-                <span>Save & Export</span>
-              </button>
+              <>
+                <button 
+                  onClick={handleSaveFootprint}
+                  disabled={isSaving || !user}
+                  className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2 ${
+                    isSaving || !user
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : saveSuccess
+                      ? 'bg-green-600 text-white hover:bg-green-700'
+                      : 'bg-gray-600 text-white hover:bg-gray-700'
+                  }`}
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : saveSuccess ? (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Saved!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Save to Account</span>
+                    </>
+                  )}
+                </button>
+                {!user && (
+                  <p className="text-sm text-amber-600">Login required to save</p>
+                )}
+                {saveError && (
+                  <p className="text-sm text-red-600">{saveError}</p>
+                )}
+              </>
             )}
             <button
               onClick={nextStep}

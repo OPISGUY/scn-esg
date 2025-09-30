@@ -1,22 +1,22 @@
 
 # WORKING TEST CREDENTIALS FOR RENDER BACKEND
 # Backend URL: https://scn-esg-backend.onrender.com
-# Generated: 2025-09-30 05:37:56
+# Generated: 2025-09-30 18:50:00 UTC
+# Last Verified: 2025-09-30 18:50:00 UTC
 
 ## Use these credentials for testing your frontend:
 
-
 ### Test User 1:
-- Email: admin@scn.com
-- Password: Admin123!
+- Email: demo@scn.com
+- Password: Demo1234!
+- Role: admin
+- Status: ✅ Verified working
 
 ### Test User 2:
-- Email: business@scn.com
-- Password: Business123!
-
-### Test User 3:
 - Email: test@scn.com
 - Password: Test1234!
+- Role: sustainability_manager
+- Status: ✅ Verified working
 
 
 ## Frontend Environment Variables:

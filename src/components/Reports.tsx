@@ -1,24 +1,96 @@
-import { useState } from 'react';
-import { FileText, Download, Calendar, BarChart3, TrendingUp, Users, Scale, CheckCircle } from 'lucide-react';
-import { mockCarbonFootprint, mockImpactMetrics, mockEwasteEntries, calculateCarbonBalance } from '../data/mockData';
+import { useState, useEffect } from 'react';
+import { FileText, Download, Calendar, BarChart3, TrendingUp, Users, Scale, CheckCircle, AlertCircle } from 'lucide-react';
+import { mockImpactMetrics, mockEwasteEntries, calculateCarbonBalance } from '../data/mockData';
 import { pdfService, ReportData } from '../services/pdfService';
+import { carbonService, CarbonFootprintData } from '../services/carbonService';
+import { useAuth } from '../contexts/AuthContext';
 
 const Reports = () => {
+  const { user } = useAuth();
   const [selectedReport, setSelectedReport] = useState('ghg-protocol');
   const [startDate, setStartDate] = useState('2024-01-01');
   const [endDate, setEndDate] = useState('2024-12-31');
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastGenerated, setLastGenerated] = useState<string | null>(null);
+  const [footprints, setFootprints] = useState<CarbonFootprintData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const carbonBalance = calculateCarbonBalance();
+
+  // Fetch user's carbon footprints on mount
+  useEffect(() => {
+    const fetchFootprints = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const data = await carbonService.getFootprints();
+        setFootprints(data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load footprints:', err);
+        setError('Failed to load carbon footprint data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFootprints();
+  }, [user]);
+
+  // Get the most recent footprint or fallback to localStorage or defaults
+  const getCurrentFootprint = () => {
+    if (footprints.length > 0) {
+      const latest = footprints[0];
+      return {
+        companyName: user?.companyName || user?.email?.split('@')[0] || 'Your Company',
+        scope1: latest.scope1_emissions,
+        scope2: latest.scope2_emissions,
+        scope3: latest.scope3_emissions,
+        total: latest.total_emissions || (latest.scope1_emissions + latest.scope2_emissions + latest.scope3_emissions)
+      };
+    }
+
+    // Fallback to localStorage
+    const stored = localStorage.getItem('carbonFootprint');
+    if (stored) {
+      try {
+        const data = JSON.parse(stored);
+        return {
+          companyName: data.companyName || user?.companyName || 'Your Company',
+          scope1: data.scope1 || 0,
+          scope2: data.scope2 || 0,
+          scope3: data.scope3 || 0,
+          total: data.total || 0
+        };
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    // Final fallback to zeros
+    return {
+      companyName: user?.company_data?.name || user?.email?.split('@')[0] || 'Your Company',
+      scope1: 0,
+      scope2: 0,
+      scope3: 0,
+      total: 0
+    };
+  };
+
+  const currentFootprint = getCurrentFootprint();
 
   const generatePDFReport = async () => {
     setIsGenerating(true);
     try {
       const reportData: ReportData = {
-        companyName: mockCarbonFootprint.companyName,
+        companyName: currentFootprint.companyName,
         reportingPeriod: { start: startDate, end: endDate },
-        carbonFootprint: mockCarbonFootprint,
+        carbonFootprint: currentFootprint,
         carbonBalance: carbonBalance,
         impactMetrics: mockImpactMetrics,
         ewasteEntries: mockEwasteEntries,
@@ -92,6 +164,31 @@ const Reports = () => {
           <FileText className="w-16 h-16 text-green-400" />
         </div>
       </div>
+
+      {/* Loading/Error States */}
+      {isLoading && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center space-x-3">
+          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-blue-800">Loading your carbon footprint data...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center space-x-3">
+          <AlertCircle className="w-5 h-5 text-amber-600" />
+          <div>
+            <p className="text-amber-800 font-medium">{error}</p>
+            <p className="text-amber-700 text-sm mt-1">Using local data for report generation</p>
+          </div>
+        </div>
+      )}
+
+      {!user && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center space-x-3">
+          <AlertCircle className="w-5 h-5 text-amber-600" />
+          <p className="text-amber-800">Please log in to access your carbon footprint reports and data.</p>
+        </div>
+      )}
 
       {/* Report Generation Section */}
       <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
@@ -200,7 +297,7 @@ const Reports = () => {
                 <div className="text-sm text-gray-600 space-y-2">
                   <div className="flex justify-between">
                     <span>Company:</span>
-                    <span className="font-medium">{mockCarbonFootprint.companyName}</span>
+                    <span className="font-medium">{currentFootprint.companyName}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Period:</span>
@@ -208,7 +305,7 @@ const Reports = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Total Emissions:</span>
-                    <span className="font-medium">{mockCarbonFootprint.total.toFixed(1)} tCO₂e</span>
+                    <span className="font-medium">{currentFootprint.total.toFixed(1)} tCO₂e</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Net Emissions:</span>
@@ -268,12 +365,12 @@ const Reports = () => {
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
             <h3 className="text-lg font-semibold text-green-800 mb-2">Carbon Footprint</h3>
             <div className="text-3xl font-bold text-green-600 mb-2">
-              {mockCarbonFootprint.total.toFixed(1)} tCO₂e
+              {currentFootprint.total.toFixed(1)} tCO₂e
             </div>
             <div className="text-sm text-green-700">
-              Scope 1: {mockCarbonFootprint.scope1.toFixed(1)} • 
-              Scope 2: {mockCarbonFootprint.scope2.toFixed(1)} • 
-              Scope 3: {mockCarbonFootprint.scope3.toFixed(1)}
+              Scope 1: {currentFootprint.scope1.toFixed(1)} • 
+              Scope 2: {currentFootprint.scope2.toFixed(1)} • 
+              Scope 3: {currentFootprint.scope3.toFixed(1)}
             </div>
           </div>
 

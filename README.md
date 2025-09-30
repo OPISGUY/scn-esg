@@ -36,9 +36,9 @@ A comprehensive Environmental, Social, and Governance (ESG) reporting platform d
 
 ## 🚀 Live Demo
 
-**Frontend**: [Coming Soon - Deploying with Vercel]
-**Backend API**: [Coming Soon - Deploying with Railway]
-**Documentation**: [View Full Docs](./PROJECT_DOCUMENTATION.md)
+**Frontend**: https://scn-esg.vercel.app  
+**Backend API**: https://scn-esg-backend.onrender.com  
+**Documentation**: [Implementation Guide](./IMPLEMENTATION_GUIDE.md) | [Technical Docs](./PROJECT_DOCUMENTATION.md)
 
 ## 🛠 Tech Stack
 
@@ -56,11 +56,11 @@ A comprehensive Environmental, Social, and Governance (ESG) reporting platform d
 - **Google Gemini AI** for intelligent features
 - **JWT Authentication** for secure access
 
-### Deployment
-- **Vercel Pro** (GitHub Student Pack) for frontend
-- **Railway** (Student credits) for backend
-- **GitHub Actions** for CI/CD
-- **PlanetScale** for database scaling
+### Deployment (Production-Ready ✅)
+- **Vercel** (GitHub Student Pack) for frontend hosting
+- **Render** for backend API and PostgreSQL
+- **GitHub Actions** for automated CI/CD
+- **Google Gemini AI** for intelligent features
 
 ## 🏃‍♂️ Quick Start
 
@@ -213,9 +213,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **GitHub Education** for Student Pack benefits
 - **Open Source Community** for amazing tools and libraries
 
-## 📞 Support
+## 📞 Support & Documentation
 
-- **Documentation**: [Full Technical Docs](./PROJECT_DOCUMENTATION.md)
+- **Getting Started**: [Implementation Guide](./IMPLEMENTATION_GUIDE.md) - Complete project history and next steps
+- **Technical Reference**: [Full Technical Docs](./PROJECT_DOCUMENTATION.md)
+- **Team Workflows**: [Agent Operations](./AGENTS.md)
 - **Issues**: [GitHub Issues](https://github.com/OPISGUY/scn-esg/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/OPISGUY/scn-esg/discussions)
 
