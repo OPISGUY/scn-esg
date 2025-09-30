@@ -64,6 +64,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const clearAuthData = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    setUser(null);
+  };
+
+  const refreshAccessToken = async (): Promise<string | null> => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      return null;
+    }
+
+    try {
+      const response = await fetch(buildApiUrl('/api/v1/auth/refresh/'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      });
+
+      if (!response.ok) {
+        clearAuthData();
+        return null;
+      }
+
+      const data = await response.json();
+      if (data?.access) {
+        localStorage.setItem('access_token', data.access);
+        return data.access as string;
+      }
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      clearAuthData();
+    }
+
+    return null;
+  };
+
   const apiBaseUrl = getApiBaseUrl();
 
   useEffect(() => {
@@ -73,26 +112,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      if (token) {
-        const profileUrl = buildApiUrl('/api/v1/users/auth/profile/');
-        const response = await fetch(profileUrl, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        } else {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
+      if (!token) {
+        clearAuthData();
+        return;
+      }
+
+      const profileUrl = buildApiUrl('/api/v1/users/auth/profile/');
+      let response = await fetch(profileUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 401) {
+        console.warn('Access token expired, attempting refresh...');
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          response = await fetch(profileUrl, {
+            headers: {
+              'Authorization': `Bearer ${newToken}`,
+            },
+          });
         }
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      } else if (response.status === 401) {
+        clearAuthData();
       }
     } catch (error) {
       console.error('Auth check failed:', error);
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      clearAuthData();
     } finally {
       setIsLoading(false);
     }
@@ -158,9 +210,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    setUser(null);
+    clearAuthData();
   };
 
   const sendVerificationEmail = async (email: string) => {
@@ -183,7 +233,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     console.log('🚀 ONBOARDING DEBUG INFO:');
     console.log('Onboarding data:', onboardingData);
     
-    const token = localStorage.getItem('access_token');
+    let token = localStorage.getItem('access_token');
     if (!token) {
       console.error('❌ No authentication token found');
       throw new Error('No authentication token found');
@@ -194,7 +244,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     console.log('🌐 Onboarding URL:', onboardingUrl);
     
     try {
-      const response = await fetch(onboardingUrl, {
+      let response = await fetch(onboardingUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -206,10 +256,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('📡 Response status:', response.status);
       console.log('📡 Response URL:', response.url);
 
+      if (response.status === 401) {
+        console.warn('🔄 Access token rejected during onboarding, attempting refresh...');
+        const newToken = await refreshAccessToken();
+        if (!newToken) {
+          throw new Error('Session expired. Please log in again.');
+        }
+        token = newToken;
+        response = await fetch(onboardingUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${newToken}`,
+          },
+          body: JSON.stringify(onboardingData),
+        });
+
+        console.log('📡 Retried response status:', response.status);
+      }
+
       if (!response.ok) {
-        const error = await response.json();
-        console.error('❌ Onboarding error:', error);
-        throw new Error(error.error || 'Onboarding completion failed');
+        let errorMessage = 'Onboarding completion failed';
+        try {
+          const error = await response.json();
+          console.error('❌ Onboarding error:', error);
+          errorMessage = error.error || error.detail || errorMessage;
+        } catch (parseError) {
+          console.error('❌ Failed to parse onboarding error response:', parseError);
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -223,8 +298,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('✅ User state updated successfully');
       } else {
         console.error('❌ No user data in response');
-    // Fallback: manually update the user state
-    setUser((prevUser: User | null) => (prevUser ? { ...prevUser, is_onboarding_complete: true } : null));
+        // Fallback: manually update the user state
+        setUser((prevUser: User | null) => (prevUser ? { ...prevUser, is_onboarding_complete: true } : null));
         console.log('🔄 Manual user state update applied');
       }
     } catch (error) {
