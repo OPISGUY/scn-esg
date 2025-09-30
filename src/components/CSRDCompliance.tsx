@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { buildApiUrl } from '../utils/api';
 
 interface ESRSDatapoint {
   id: number;
@@ -52,9 +53,6 @@ const CSRDCompliance: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedDatapoint, setExpandedDatapoint] = useState<number | null>(null);
-
-  const API_BASE = `${import.meta.env.VITE_API_URL || 'https://scn-esg-backend.onrender.com'}/api/v1/compliance`;
-
   useEffect(() => {
     if (activeTab === 'datapoints') {
       fetchDatapoints();
@@ -69,7 +67,7 @@ const CSRDCompliance: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/esrs-datapoints/`);
+      const response = await fetch(buildApiUrl('/api/v1/compliance/esrs-datapoints/'));
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -87,7 +85,7 @@ const CSRDCompliance: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/assessments/`);
+      const response = await fetch(buildApiUrl('/api/v1/compliance/assessments/'));
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -105,7 +103,7 @@ const CSRDCompliance: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE}/regulatory-updates/`);
+      const response = await fetch(buildApiUrl('/api/v1/compliance/regulatory-updates/'));
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

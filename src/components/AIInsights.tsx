@@ -11,6 +11,7 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
+import { buildApiUrl } from '../utils/api';
 
 interface ValidationResult {
   validation_score: number;
@@ -68,8 +69,7 @@ const AIInsights: React.FC = () => {
 
   const callAIService = async (endpoint: string, data?: any) => {
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://scn-esg-backend.onrender.com';
-      const response = await fetch(`${API_BASE}/api/v1/carbon/ai/${endpoint}/`, {
+      const response = await fetch(buildApiUrl(`/api/v1/carbon/ai/${endpoint}/`), {
         method: data ? 'POST' : 'GET',
         headers: {
           'Content-Type': 'application/json',

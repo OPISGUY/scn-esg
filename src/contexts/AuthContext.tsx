@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../services/auth';
+import { buildApiUrl, getApiBaseUrl } from '../utils/api';
 
 interface User {
   id: string;
@@ -63,27 +64,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const apiBaseUrl = getApiBaseUrl();
 
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
-  // Helper function to construct URLs safely
-  const buildUrl = (endpoint: string) => {
-    const baseUrl = API_URL.replace(/\/+$/, ''); // Remove trailing slashes
-    const cleanEndpoint = endpoint.replace(/^\/+/, '/'); // Ensure single leading slash
-    const fullUrl = `${baseUrl}${cleanEndpoint}`;
-    console.log(`🔗 URL Construction: Base="${baseUrl}" + Endpoint="${cleanEndpoint}" = "${fullUrl}"`);
-    return fullUrl;
-  };
-
   const checkAuthStatus = async () => {
     try {
       const token = localStorage.getItem('access_token');
       if (token) {
-        const baseUrl = API_URL.replace(/\/+$/, ''); // Remove any trailing slashes
-        const response = await fetch(`${baseUrl}/api/v1/users/auth/profile/`, {
+        const profileUrl = buildApiUrl('/api/v1/users/auth/profile/');
+        const response = await fetch(profileUrl, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -109,17 +101,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     // Debug logging
     console.log('🔍 LOGIN DEBUG INFO:');
-    console.log('API_URL:', API_URL);
+    console.log('API base URL:', apiBaseUrl);
+    const env = (import.meta as { env?: Record<string, string | undefined> }).env || {};
     console.log('Environment variables:', {
-      VITE_API_URL: import.meta.env.VITE_API_URL,
-      VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
-      NODE_ENV: import.meta.env.NODE_ENV,
-      MODE: import.meta.env.MODE
+      VITE_API_URL: env.VITE_API_URL,
+      VITE_BACKEND_URL: env.VITE_BACKEND_URL,
+      NODE_ENV: env.NODE_ENV,
+      MODE: env.MODE,
     });
-    
-    // Ensure no trailing slash on API_URL and construct the URL properly
-    const baseUrl = API_URL.replace(/\/+$/, ''); // Remove any trailing slashes
-    const loginUrl = `${baseUrl}/api/v1/users/auth/login/`;
+
+    const loginUrl = buildApiUrl('/api/v1/users/auth/login/');
     console.log('Full login URL:', loginUrl);
     
     const response = await fetch(loginUrl, {
@@ -146,8 +137,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (userData: RegisterData) => {
-    const baseUrl = API_URL.replace(/\/+$/, ''); // Remove any trailing slashes
-    const response = await fetch(`${baseUrl}/api/v1/users/auth/register/`, {
+    const registerUrl = buildApiUrl('/api/v1/users/auth/register/');
+    const response = await fetch(registerUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -199,13 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     console.log('🔑 Token found:', token.substring(0, 50) + '...');
 
-    // Use the same API_URL logic as login function
-    const API_URL = import.meta.env.VITE_API_URL || 
-                    import.meta.env.VITE_BACKEND_URL || 
-                    'https://scn-esg-backend.onrender.com';
-    
-    const baseUrl = API_URL.replace(/\/+$/, '');
-    const onboardingUrl = `${baseUrl}/api/v1/users/auth/complete-onboarding/`;
+    const onboardingUrl = buildApiUrl('/api/v1/users/auth/complete-onboarding/');
     console.log('🌐 Onboarding URL:', onboardingUrl);
     
     try {
@@ -238,8 +223,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('✅ User state updated successfully');
       } else {
         console.error('❌ No user data in response');
-        // Fallback: manually update the user state
-        setUser(prev => prev ? { ...prev, is_onboarding_complete: true } : null);
+    // Fallback: manually update the user state
+    setUser((prevUser: User | null) => (prevUser ? { ...prevUser, is_onboarding_complete: true } : null));
         console.log('🔄 Manual user state update applied');
       }
     } catch (error) {

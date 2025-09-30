@@ -9,10 +9,9 @@ import {
   Users,
   Lightbulb
 } from 'lucide-react';
+import { buildApiUrl } from '../utils/api';
 
 // API Configuration
-const API_BASE = import.meta.env.VITE_API_URL || 'https://scn-esg-backend.onrender.com';
-
 // Utility functions
 const getESRSCategoryColor = (category: string) => {
   const colors: Record<string, string> = {
@@ -113,8 +112,8 @@ const CSRDReadinessAssessment: React.FC<CSRDReadinessAssessmentProps> = ({
   const fetchAssessmentDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/v1/compliance/assessments/${assessmentId}/`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      const response = await fetch(buildApiUrl(`/api/v1/compliance/assessments/${assessmentId}/`), {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
       });
 
       if (response.ok) {
@@ -131,8 +130,8 @@ const CSRDReadinessAssessment: React.FC<CSRDReadinessAssessmentProps> = ({
   const fetchMaterialityQuestions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/v1/compliance/assessments/${assessmentId}/materiality_questionnaire/`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      const response = await fetch(buildApiUrl(`/api/v1/compliance/assessments/${assessmentId}/materiality_questionnaire/`), {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
       });
 
       if (response.ok) {
@@ -150,11 +149,11 @@ const CSRDReadinessAssessment: React.FC<CSRDReadinessAssessmentProps> = ({
   const submitMaterialityResponses = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/v1/compliance/assessments/${assessmentId}/submit_materiality_responses/`, {
+      const response = await fetch(buildApiUrl(`/api/v1/compliance/assessments/${assessmentId}/submit_materiality_responses/`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         },
         body: JSON.stringify({ responses })
       });
@@ -174,10 +173,10 @@ const CSRDReadinessAssessment: React.FC<CSRDReadinessAssessmentProps> = ({
     try {
       setAiAnalysisProgress(10);
       
-      const response = await fetch(`${API_BASE}/api/v1/compliance/assessments/${assessmentId}/run_ai_analysis/`, {
+      const response = await fetch(buildApiUrl(`/api/v1/compliance/assessments/${assessmentId}/run_ai_analysis/`), {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       });
 

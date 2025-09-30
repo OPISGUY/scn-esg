@@ -1,4 +1,4 @@
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+import { buildApiUrl } from '../utils/api';
 
 export interface EmailVerificationRequest {
   email: string;
@@ -27,7 +27,7 @@ export interface PasswordResetConfirmResponse {
 
 export const authService = {
   async sendVerificationEmail(email: string): Promise<EmailVerificationResponse> {
-    const response = await fetch(`${API_URL}/api/v1/users/email/send-verification/`, {
+    const response = await fetch(buildApiUrl('/api/v1/users/email/send-verification/'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ export const authService = {
   },
 
   async verifyEmail(token: string): Promise<EmailVerificationResponse> {
-    const response = await fetch(`${API_URL}/api/v1/users/email/verify/`, {
+    const response = await fetch(buildApiUrl('/api/v1/users/email/verify/'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ export const authService = {
   },
 
   async sendPasswordReset(email: string): Promise<PasswordResetResponse> {
-    const response = await fetch(`${API_URL}/api/v1/users/email/password-reset/`, {
+    const response = await fetch(buildApiUrl('/api/v1/users/email/password-reset/'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ export const authService = {
   },
 
   async confirmPasswordReset(token: string, password: string): Promise<PasswordResetConfirmResponse> {
-    const response = await fetch(`${API_URL}/api/v1/users/email/password-reset-confirm/`, {
+    const response = await fetch(buildApiUrl('/api/v1/users/email/password-reset-confirm/'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
