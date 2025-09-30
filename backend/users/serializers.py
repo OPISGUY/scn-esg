@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
             'company', 'company_data', 'role', 'is_active',
             'is_onboarding_complete', 'dashboard_preferences', 'created_at'
         ]
-    read_only_fields = ['id', 'created_at', 'company_data', 'is_onboarding_complete', 'dashboard_preferences']
+        read_only_fields = ['id', 'created_at', 'company_data', 'is_onboarding_complete', 'dashboard_preferences']
         extra_kwargs = {
             'password': {'write_only': True}
         }
