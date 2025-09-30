@@ -34,6 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange }) 
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: BarChart3, description: 'Overview of your carbon footprint and SCN impact' },
     { id: 'calculator', name: 'Carbon Calculator', icon: Calculator, description: 'Calculate your GHG Protocol compliant footprint' },
+    { id: 'history', name: 'Footprint History', icon: TrendingUp, description: 'View and manage saved carbon footprints' },
     { id: 'conversational', name: 'Smart Data Entry', icon: MessageCircle, description: 'AI-powered conversational data entry' },
     { id: 'ewaste', name: 'E-waste Tracker', icon: Recycle, description: 'Log device donations and track environmental impact' },
     { id: 'impact', name: 'Impact Viewer', icon: TrendingUp, description: 'Visualize your environmental and social impact' },

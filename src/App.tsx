@@ -13,6 +13,7 @@ import Reports from './components/Reports';
 import AIInsights from './components/AIInsights';
 import ConversationalDataEntry from './components/ConversationalDataEntry';
 import CSRDCompliance from './components/CSRDCompliance';
+import { FootprintHistory } from './components/FootprintHistory';
 import HelpButton from './components/HelpButton';
 import { HelpTooltipPortal } from './components/HelpTooltip';
 
@@ -59,6 +60,8 @@ function AppContent() {
         return <Dashboard onViewChange={setCurrentView} />;
       case 'calculator':
         return <CarbonCalculator onViewChange={setCurrentView} />;
+      case 'history':
+        return <FootprintHistory />;
       case 'conversational':
         return <ConversationalDataEntry />;
       case 'ewaste':
