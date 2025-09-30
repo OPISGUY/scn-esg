@@ -14,9 +14,10 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'company', 'company_data', 'role', 'is_active', 'created_at'
+            'company', 'company_data', 'role', 'is_active',
+            'is_onboarding_complete', 'dashboard_preferences', 'created_at'
         ]
-        read_only_fields = ['id', 'created_at', 'company_data']
+    read_only_fields = ['id', 'created_at', 'company_data', 'is_onboarding_complete', 'dashboard_preferences']
         extra_kwargs = {
             'password': {'write_only': True}
         }
