@@ -292,3 +292,8 @@ ENABLE_AI_FEATURES = os.getenv('ENABLE_AI_FEATURES', 'False').lower() == 'true'
 AI_CACHE_TIMEOUT = 3600  # 1 hour default
 AI_PREDICTION_CACHE_TIMEOUT = 43200  # 12 hours
 AI_BENCHMARK_CACHE_TIMEOUT = 21600  # 6 hours
+
+# Demo/test user seeding controls
+ENABLE_DEMO_USERS = os.getenv('ENABLE_DEMO_USERS', 'True').lower() == 'true'
+RESET_DEMO_PASSWORDS = os.getenv('RESET_DEMO_PASSWORDS', 'True').lower() == 'true'
+DEMO_COMPANY_NAME = os.getenv('DEMO_COMPANY_NAME', 'SCN Demo Company')

@@ -59,6 +59,17 @@ railway up
 railway run python manage.py migrate
 railway run python manage.py createsuperuser
 railway run python manage.py sync_esrs_datapoints --source=local
+#### Default Demo Credentials
+
+- Migrations now seed a trio of demo accounts automatically so smoke tests succeed immediately after deploy.
+- Seeding is controlled with environment flags:
+  - `ENABLE_DEMO_USERS` (default `True`) toggles creation.
+  - `RESET_DEMO_PASSWORDS` (default `True`) realigns passwords on each migrate.
+- Out-of-the-box credentials:
+  - Admin: `demo@scn.com` / `Demo1234!`
+  - Sustainability Manager: `test@scn.com` / `Test1234!`
+  - Decision Maker: `business@scn.com` / `Business123!`
+- Set `ENABLE_DEMO_USERS=False` if you need a clean production tenant without sample accounts.
 ```
 
 #### Quick Deploy - Frontend to Vercel
