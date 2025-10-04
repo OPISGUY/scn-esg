@@ -121,5 +121,5 @@ Vite **bundles environment variables at build time**, so:
 ---
 
 **Time Required**: ~5 minutes
-**Last Updated**: October 4, 2025
+**Last Updated**: October 5, 2025 - Force rebuild triggered
 **Next**: Follow Step 1 above to update Vercel environment variable
