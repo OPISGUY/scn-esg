@@ -260,12 +260,16 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
           content: msg.content,
         }));
 
+      // Only pass footprint ID if it's a valid UUID (not a temp/local ID)
+      const isValidUUID = currentFootprintId && 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentFootprintId);
+      
       // Call AI extraction API
       const result: ConversationalExtractionResponse =
         await conversationalAIService.extractFromConversation(
           currentInput,
           conversationHistory,
-          currentFootprintId,
+          isValidUUID ? currentFootprintId : undefined,
           sessionId || undefined
         );
 
