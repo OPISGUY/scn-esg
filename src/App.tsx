@@ -14,6 +14,7 @@ import AIInsights from './components/AIInsights';
 import ConversationalDataEntry from './components/ConversationalDataEntry';
 import CSRDCompliance from './components/CSRDCompliance';
 import { FootprintHistory } from './components/FootprintHistory';
+import ImportData from './components/ImportData';
 import HelpButton from './components/HelpButton';
 import { HelpTooltipPortal } from './components/HelpTooltip';
 
@@ -76,6 +77,8 @@ function AppContent() {
         return <AIInsights />;
       case 'compliance':
         return <CSRDCompliance />;
+      case 'import':
+        return <ImportData />;
       default:
         return <Dashboard onViewChange={setCurrentView} />;
     }

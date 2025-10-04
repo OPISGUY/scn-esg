@@ -32,18 +32,25 @@ def ai_validate_emission_data(request):
     """
     try:
         footprint_id = request.data.get('footprint_id')
-        if not footprint_id:
-            return Response(
-                {'error': 'footprint_id is required'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
         
-        # Get carbon footprint and verify ownership
-        footprint = get_object_or_404(
-            CarbonFootprint,
-            id=footprint_id,
-            company__users=request.user
-        )
+        if footprint_id:
+            # Get specific carbon footprint and verify ownership
+            footprint = get_object_or_404(
+                CarbonFootprint,
+                id=footprint_id,
+                company__users=request.user
+            )
+        else:
+            # Get the most recent footprint for the user's company
+            footprint = CarbonFootprint.objects.filter(
+                company__users=request.user
+            ).order_by('-created_at').first()
+            
+            if not footprint:
+                return Response(
+                    {'error': 'No carbon footprint data found. Please create a carbon footprint first.'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
         
         # Initialize AI validator
         validator = AIDataValidator()
@@ -61,7 +68,7 @@ def ai_validate_emission_data(request):
     except Exception as e:
         logger.error(f"AI validation error: {str(e)}")
         return Response(
-            {'error': 'Validation service temporarily unavailable'},
+            {'error': f'Validation service error: {str(e)}'},
             status=status.HTTP_503_SERVICE_UNAVAILABLE
         )
 

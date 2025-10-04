@@ -11,7 +11,6 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
-import { buildApiUrl } from '../utils/api';
 
 interface ValidationResult {
   validation_score: number;
@@ -65,21 +64,26 @@ const AIInsights: React.FC = () => {
   const [loading, setLoading] = useState<{[key: string]: boolean}>({});
   const [error, setError] = useState<string | null>(null);
 
-  const mockFootprintId = "mock-footprint-123"; // In real app, this would come from props or context
-
   const callAIService = async (endpoint: string, data?: any) => {
     try {
-      const response = await fetch(buildApiUrl(`/api/v1/carbon/ai/${endpoint}/`), {
+      const token = localStorage.getItem('access_token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`https://scn-esg-backend.onrender.com/api/v1/carbon/ai/${endpoint}/`, {
         method: data ? 'POST' : 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          // In real app, add Authorization header
-        },
+        headers,
         body: data ? JSON.stringify(data) : undefined,
       });
 
       if (!response.ok) {
-        throw new Error(`AI service error: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `AI service error: ${response.statusText}`);
       }
 
       return await response.json();
@@ -94,31 +98,13 @@ const AIInsights: React.FC = () => {
     setError(null);
     
     try {
-      const result = await callAIService('validate', { footprint_id: mockFootprintId });
+      // Get the latest footprint for the user (in a real app, this would come from props or state)
+      // For now, we'll try to call the API and it will use company data
+      const result = await callAIService('validate', {});
       setValidationResult(result);
-    } catch (err) {
-      setError('Failed to validate data. Using mock results for demo.');
-      // Use mock data for demo
-      setValidationResult({
-        validation_score: 85,
-        anomalies: [
-          {
-            field: "scope1_emissions",
-            severity: "medium",
-            message: "Scope 1 emissions seem high for company size",
-            suggested_value: 1200.50
-          }
-        ],
-        data_quality_issues: [
-          "Consider adding more detailed activity data"
-        ],
-        recommendations: [
-          "Review fuel consumption calculations",
-          "Verify emission factors used"
-        ],
-        company_name: "Example Corp",
-        reporting_period: "2024"
-      });
+    } catch (err: any) {
+      setError(err.message || 'Failed to validate data. Please ensure you have carbon footprint data.');
+      console.error('Validation error:', err);
     } finally {
       setLoading(prev => ({ ...prev, validation: false }));
     }
@@ -131,20 +117,9 @@ const AIInsights: React.FC = () => {
     try {
       const result = await callAIService('benchmark');
       setBenchmarkResult(result);
-    } catch (err) {
-      setError('Failed to get benchmark. Using mock results for demo.');
-      // Use mock data for demo
-      setBenchmarkResult({
-        percentile_ranking: 65,
-        industry_average: 2500.75,
-        performance_vs_average: -15.2,
-        improvement_opportunities: [
-          "Energy efficiency improvements could reduce emissions by 20%",
-          "Renewable energy adoption could cut Scope 2 by 40%"
-        ],
-        company_name: "Example Corp",
-        industry: "Technology"
-      });
+    } catch (err: any) {
+      setError(err.message || 'Failed to get benchmark data. Please ensure your company has emission data.');
+      console.error('Benchmark error:', err);
     } finally {
       setLoading(prev => ({ ...prev, benchmark: false }));
     }
@@ -157,35 +132,9 @@ const AIInsights: React.FC = () => {
     try {
       const result = await callAIService('action-plan');
       setActionPlan(result);
-    } catch (err) {
-      setError('Failed to generate action plan. Using mock results for demo.');
-      // Use mock data for demo
-      setActionPlan({
-        quick_wins: [
-          {
-            action: "Switch to LED lighting",
-            co2_reduction: 50.5,
-            cost: "Low",
-            timeline: "3 months"
-          }
-        ],
-        medium_term: [
-          {
-            action: "Install solar panels",
-            co2_reduction: 200.0,
-            cost: "Medium",
-            timeline: "12 months"
-          }
-        ],
-        long_term: [
-          {
-            action: "Electrify vehicle fleet",
-            co2_reduction: 300.0,
-            cost: "High",
-            timeline: "24 months"
-          }
-        ]
-      });
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate action plan. Please ensure your company has emission data.');
+      console.error('Action plan error:', err);
     } finally {
       setLoading(prev => ({ ...prev, actionplan: false }));
     }
@@ -233,12 +182,12 @@ const AIInsights: React.FC = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-yellow-800">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-red-800">
             <AlertTriangle className="w-5 h-5" />
-            <span className="font-medium">Demo Mode</span>
+            <span className="font-medium">Error</span>
           </div>
-          <p className="text-yellow-700 mt-1">{error}</p>
+          <p className="text-red-700 mt-1">{error}</p>
         </div>
       )}
 

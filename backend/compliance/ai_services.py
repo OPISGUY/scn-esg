@@ -11,7 +11,7 @@ class CSRDAIService:
     
     def __init__(self):
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-2.5-flash-lite-preview-09-2025')
     
     def analyze_csrd_readiness(self, assessment_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -344,7 +344,7 @@ class ComplianceAIService:
     
     def __init__(self):
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-2.5-flash-lite-preview-09-2025')
     
     def generate_content(self, prompt: str) -> str:
         """Generate AI content for compliance guidance"""

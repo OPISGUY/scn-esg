@@ -133,6 +133,87 @@ echo "Backend: $BACKEND_URL"
 echo "Frontend: Check Vercel output for URL"
 ```
 
+## Post-Deployment: Import Data Feature Setup
+
+### Database Migrations for Import Feature
+After deploying the backend, run migrations to enable the Import Data feature:
+
+```bash
+# Railway (recommended)
+railway run python manage.py migrate
+
+# Or via Render
+# Use the Render dashboard → Shell tab → run:
+# python manage.py migrate
+```
+
+This creates the necessary tables:
+- `data_import_importsource` - Available import sources (file/api/iot/erp)
+- `data_import_importjob` - Import job tracking with progress and status
+- `data_import_importfieldmapping` - Saved field mapping templates
+- `data_import_importedrecord` - Audit trail for imported rows
+
+### Testing Import Functionality
+
+1. **Login to the platform**
+   - Use demo credentials: `demo@scn.com` / `Demo1234!`
+   - Navigate to "Import Data" from the main menu
+
+2. **Upload a test file**
+   - Create a CSV file with carbon emissions data:
+   ```csv
+   Date,Amount,Category,Description
+   2024-01-15,150.5,Transportation,Monthly fleet fuel
+   2024-01-20,85.3,Electricity,Office building energy
+   ```
+   - Or use the included `test_carbon_data.csv`
+
+3. **Complete the import wizard**
+   - Select "CSV/Excel Files" source
+   - Choose "Carbon Emissions" data type
+   - Upload your CSV file
+   - Review the field mapping suggestions
+   - Click "Start Import"
+   - Verify success statistics
+
+4. **Check imported data**
+   - Navigate to Dashboard
+   - View imported records in Carbon Calculator
+   - Check Footprint History for new entries
+
+### Import Feature Configuration
+
+Add these optional environment variables for customization:
+
+```bash
+# Maximum file upload size (default: 50MB)
+railway variables set MAX_UPLOAD_SIZE="52428800"
+
+# Enable/disable demo data seeding
+railway variables set ENABLE_DEMO_USERS="True"
+```
+
+### Troubleshooting Import Issues
+
+**Issue: "Failed to preview file"**
+- Check file format (CSV, XLSX, XLS, JSON only)
+- Verify file size < 50MB
+- Ensure pandas and openpyxl are installed:
+  ```bash
+  railway run pip list | grep pandas
+  railway run pip list | grep openpyxl
+  ```
+
+**Issue: "Import job stuck in pending"**
+- Check backend logs: `railway logs`
+- Verify field mapping matches data structure
+- Test locally: `python test_import_functionality.py`
+
+**Issue: "No data appears after import"**
+- Check import job status: `/api/v1/imports/jobs/{id}/`
+- Review error messages in ImportedRecord table
+- Verify user has permission to view data
+
 ### Option B: Web Dashboard Deployment
 
 ...existing code...

@@ -1,0 +1,9 @@
+Date,Amount,Category,Description,Organization
+2024-01-15,150.5,Transportation,Monthly fleet fuel consumption,Acme Corp
+2024-01-20,85.3,Electricity,Office building energy usage,Acme Corp
+2024-02-01,200.7,Transportation,Air travel emissions - Conference,Acme Corp
+2024-02-10,95.2,Electricity,Data center power consumption,Acme Corp
+2024-03-05,120.4,Transportation,Ground shipping and logistics,Acme Corp
+2024-03-15,78.9,Electricity,Office HVAC system,Acme Corp
+2024-04-01,180.6,Transportation,Employee commuting emissions,Acme Corp
+2024-04-18,88.1,Electricity,Server room cooling,Acme Corp

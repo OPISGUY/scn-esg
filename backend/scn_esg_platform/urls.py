@@ -64,6 +64,7 @@ urlpatterns = [
     path('api/v1/ewaste/', include('ewaste.urls')),
     path('api/v1/analytics/', include('analytics.urls')),
     path('compliance/', include('compliance.urls')),
+    path('api/v1/imports/', include('data_import.urls')),
 ]
 
 # Serve media files during development

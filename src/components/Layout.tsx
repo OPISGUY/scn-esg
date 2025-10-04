@@ -15,7 +15,8 @@ import {
   Brain,
   MessageCircle,
   Shield,
-  LogOut
+  LogOut,
+  Upload
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -36,6 +37,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange }) 
     { id: 'calculator', name: 'Carbon Calculator', icon: Calculator, description: 'Calculate your GHG Protocol compliant footprint' },
     { id: 'history', name: 'Footprint History', icon: TrendingUp, description: 'View and manage saved carbon footprints' },
     { id: 'conversational', name: 'Smart Data Entry', icon: MessageCircle, description: 'AI-powered conversational data entry' },
+    { id: 'import', name: 'Import Data', icon: Upload, description: 'Import existing sustainability data from CSV, Excel, or JSON files' },
     { id: 'ewaste', name: 'E-waste Tracker', icon: Recycle, description: 'Log device donations and track environmental impact' },
     { id: 'impact', name: 'Impact Viewer', icon: TrendingUp, description: 'Visualize your environmental and social impact' },
     { id: 'offsets', name: 'Carbon Offsets', icon: ShoppingCart, description: 'Purchase verified carbon credits and Sequoia Tonnes' },

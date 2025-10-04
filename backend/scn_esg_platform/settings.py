@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'analytics',
     'notifications',
     'compliance',
+    'data_import',
 ]
 
 MIDDLEWARE = [
