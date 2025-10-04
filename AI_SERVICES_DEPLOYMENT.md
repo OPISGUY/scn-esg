@@ -3,8 +3,8 @@
 ## ✅ Completed Local Updates
 
 ### 1. API Key and Model Updated
-- **New API Key**: `AIzaSyD4giqvYql_05EX3a6XPMCbaRPA65lFyzw`
-- **New Model**: `gemini-2.5-flash-lite-preview-09-2025`
+- **API Key**: Set in `.env` file (not committed to Git)
+- **Model**: `gemini-2.5-flash-lite-preview-09-2025`
 
 ### 2. Code Updates
 - ✅ Updated `backend/carbon/ai_services.py` - GeminiAIService class
@@ -34,7 +34,7 @@ Total: 4/4 tests passed
 4. Add or update the environment variable:
    ```
    Key: GOOGLE_AI_API_KEY
-   Value: AIzaSyD4giqvYql_05EX3a6XPMCbaRPA65lFyzw
+   Value: [Your API key from the local .env file]
    ```
 5. Click **"Save Changes"**
 

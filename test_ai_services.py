@@ -156,9 +156,13 @@ def test_action_plan_generator():
 
 def main():
     """Run all tests"""
+    import os
+    api_key = os.getenv('GOOGLE_AI_API_KEY', 'Not set')
+    key_status = '✅ Loaded' if api_key != 'Not set' else '❌ Not set'
+    
     print("\n" + "="*60)
     print("AI SERVICES TEST SUITE")
-    print("Testing with Gemini API Key: AIzaSyD4giqvYql_05EX3a6XPMCbaRPA65lFyzw")
+    print(f"Gemini API Key: {key_status}")
     print("Model: gemini-2.5-flash-lite-preview-09-2025")
     print("="*60)
     
