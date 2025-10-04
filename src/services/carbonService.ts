@@ -87,8 +87,26 @@ class CarbonService {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || error.detail || 'Failed to create footprint');
+      let errorMessage = 'Failed to create footprint';
+      try {
+        const error = await response.json();
+        console.error('Backend error response:', error);
+        // Handle various error formats
+        if (typeof error === 'string') {
+          errorMessage = error;
+        } else if (error.company) {
+          errorMessage = Array.isArray(error.company) ? error.company[0] : error.company;
+        } else if (error.detail) {
+          errorMessage = error.detail;
+        } else if (error.error) {
+          errorMessage = error.error;
+        } else {
+          errorMessage = JSON.stringify(error);
+        }
+      } catch (e) {
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();

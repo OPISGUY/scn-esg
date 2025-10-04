@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   TrendingUp, 
   Recycle, 
@@ -6,24 +6,18 @@ import {
   FileText, 
   ArrowRight,
   Target,
-  AlertCircle,
   CheckCircle2,
   Leaf,
   GraduationCap,
   Scale,
   Info,
-  HelpCircle,
   Zap,
-  Plus,
   Upload,
   Play,
-  BarChart3,
-  Users,
   Building,
   Brain,
   Shield,
   Calendar,
-  Globe,
   Award,
   TrendingDown
 } from 'lucide-react';

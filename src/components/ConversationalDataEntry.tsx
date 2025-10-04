@@ -294,6 +294,13 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
       const scope2 = Number(extractedData.scope2_emissions?.value || 0);
       const scope3 = Number(extractedData.scope3_emissions?.value || 0);
 
+      console.log('Saving footprint with data:', { scope1, scope2, scope3 });
+
+      // Validate that we have at least some emissions
+      if (scope1 === 0 && scope2 === 0 && scope3 === 0) {
+        throw new Error('Please extract emission values before saving. All scopes are zero.');
+      }
+
       // Create footprint
       await carbonService.createFootprint({
         reporting_period: new Date().getFullYear().toString(),

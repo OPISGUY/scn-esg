@@ -33,23 +33,27 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
       setLoading(true);
       setError(null);
       const data = await carbonService.getFootprints();
-      setFootprints(data);
+      // Ensure data is always an array
+      const footprintsArray = Array.isArray(data) ? data : [];
+      setFootprints(footprintsArray);
     } catch (err) {
       console.error('Failed to load user data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      setFootprints([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
   };
 
-  // Calculate summary metrics
-  const latestFootprint = footprints[0];
-  const totalEmissions = footprints.reduce((sum, fp) => sum + (fp.total_emissions || 0), 0);
-  const avgEmissions = footprints.length > 0 ? totalEmissions / footprints.length : 0;
+  // Calculate summary metrics - with safety checks
+  const footprintsArray = Array.isArray(footprints) ? footprints : [];
+  const latestFootprint = footprintsArray[0];
+  const totalEmissions = footprintsArray.reduce((sum, fp) => sum + (fp.total_emissions || 0), 0);
+  const avgEmissions = footprintsArray.length > 0 ? totalEmissions / footprintsArray.length : 0;
 
   // Calculate trend
-  const trend = footprints.length >= 2
-    ? ((footprints[0].total_emissions || 0) - (footprints[1].total_emissions || 0)) / (footprints[1].total_emissions || 1) * 100
+  const trend = footprintsArray.length >= 2
+    ? ((footprintsArray[0].total_emissions || 0) - (footprintsArray[1].total_emissions || 0)) / (footprintsArray[1].total_emissions || 1) * 100
     : 0;
 
   if (loading) {
@@ -63,7 +67,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
     );
   }
 
-  if (footprints.length === 0) {
+  if (footprintsArray.length === 0) {
     return (
       <div className="max-w-6xl mx-auto p-6">
         <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-3xl p-12 text-center border-2 border-dashed border-gray-300">
@@ -142,7 +146,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
           <p className="text-2xl font-bold text-gray-900">
             {avgEmissions.toFixed(2)} <span className="text-lg text-gray-500">tCO₂e</span>
           </p>
-          <p className="text-xs text-gray-500 mt-2">Across {footprints.length} periods</p>
+          <p className="text-xs text-gray-500 mt-2">Across {footprintsArray.length} periods</p>
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
@@ -152,7 +156,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
             </div>
           </div>
           <h3 className="text-gray-600 text-sm font-medium mb-1">Total Records</h3>
-          <p className="text-2xl font-bold text-gray-900">{footprints.length}</p>
+          <p className="text-2xl font-bold text-gray-900">{footprintsArray.length}</p>
           <p className="text-xs text-gray-500 mt-2">Carbon footprints tracked</p>
         </div>
 
@@ -238,7 +242,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
         </div>
 
         <div className="space-y-4">
-          {footprints.map((footprint) => (
+          {footprintsArray.map((footprint) => (
             <div key={footprint.id} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
