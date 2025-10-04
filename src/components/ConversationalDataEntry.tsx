@@ -7,8 +7,12 @@ import {
   Brain, 
   CheckCircle,
   Loader2,
-  Calculator
+  Calculator,
+  Save,
+  AlertCircle
 } from 'lucide-react';
+import { carbonService } from '../services/carbonService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Message {
   id: string;
@@ -30,6 +34,7 @@ interface ConversationalDataEntryProps {
 const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({ 
   onDataExtracted
 }) => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -42,6 +47,9 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [extractedData, setExtractedData] = useState<any>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognition = useRef<any>(null);
@@ -265,6 +273,65 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
     }
   };
 
+  const handleSaveToFootprint = async () => {
+    if (!user) {
+      setSaveError('Please log in to save your data');
+      return;
+    }
+
+    if (Object.keys(extractedData).length === 0) {
+      setSaveError('No data to save. Please extract some emissions data first.');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      // Calculate emissions from extracted data
+      const scope1 = Number(extractedData.scope1_emissions?.value || 0);
+      const scope2 = Number(extractedData.scope2_emissions?.value || 0);
+      const scope3 = Number(extractedData.scope3_emissions?.value || 0);
+
+      // Create footprint
+      await carbonService.createFootprint({
+        reporting_period: new Date().getFullYear().toString(),
+        scope1_emissions: scope1,
+        scope2_emissions: scope2,
+        scope3_emissions: scope3,
+        status: 'draft'
+      });
+
+      setSaveSuccess(true);
+      
+      // Add success message
+      const systemMessage: Message = {
+        id: Date.now().toString(),
+        type: 'system',
+        content: `✅ Data saved successfully! Your carbon footprint has been created.`,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, systemMessage]);
+
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      console.error('Failed to save footprint:', error);
+      setSaveError(error instanceof Error ? error.message : 'Failed to save data');
+      
+      // Add error message
+      const systemMessage: Message = {
+        id: Date.now().toString(),
+        type: 'system',
+        content: `❌ Failed to save data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, systemMessage]);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full max-w-4xl mx-auto">
       {/* Header */}
@@ -376,10 +443,44 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
       {/* Extracted Data Summary */}
       {Object.keys(extractedData).length > 0 && (
         <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Calculator className="w-5 h-5 text-green-600" />
-            <h3 className="font-medium text-green-800">Extracted Data Summary</h3>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-green-600" />
+              <h3 className="font-medium text-green-800">Extracted Data Summary</h3>
+            </div>
+            <button
+              onClick={handleSaveToFootprint}
+              disabled={isSaving}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Save to Footprint
+                </>
+              )}
+            </button>
           </div>
+
+          {saveSuccess && (
+            <div className="mb-3 bg-green-100 border border-green-300 rounded-lg p-3 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <p className="text-green-800 text-sm font-medium">Data saved successfully!</p>
+            </div>
+          )}
+
+          {saveError && (
+            <div className="mb-3 bg-red-100 border border-red-300 rounded-lg p-3 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+              <p className="text-red-800 text-sm">{saveError}</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {Object.entries(extractedData).map(([key, data]: [string, any]) => (
               <div key={key} className="bg-white rounded p-3 border border-green-100">

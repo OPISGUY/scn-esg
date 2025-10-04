@@ -16,7 +16,8 @@ import {
   MessageCircle,
   Shield,
   LogOut,
-  Upload
+  Upload,
+  Database
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -33,7 +34,8 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange }) 
 
   // For now, use a unified navigation - role-based navigation can be added later
   const navigation = [
-    { id: 'dashboard', name: 'Dashboard', icon: BarChart3, description: 'Overview of your carbon footprint and SCN impact' },
+    { id: 'dashboard', name: 'Home', icon: BarChart3, description: 'Overview and quick actions' },
+    { id: 'user-dashboard', name: 'My Data', icon: Database, description: 'View all your saved carbon footprints and data' },
     { id: 'calculator', name: 'Carbon Calculator', icon: Calculator, description: 'Calculate your GHG Protocol compliant footprint' },
     { id: 'history', name: 'Footprint History', icon: TrendingUp, description: 'View and manage saved carbon footprints' },
     { id: 'conversational', name: 'Smart Data Entry', icon: MessageCircle, description: 'AI-powered conversational data entry' },

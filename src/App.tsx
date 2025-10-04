@@ -15,6 +15,7 @@ import ConversationalDataEntry from './components/ConversationalDataEntry';
 import CSRDCompliance from './components/CSRDCompliance';
 import { FootprintHistory } from './components/FootprintHistory';
 import ImportData from './components/ImportData';
+import UserDashboard from './components/UserDashboard';
 import HelpButton from './components/HelpButton';
 import { HelpTooltipPortal } from './components/HelpTooltip';
 
@@ -59,6 +60,8 @@ function AppContent() {
     switch (currentView) {
       case 'dashboard':
         return <Dashboard onViewChange={setCurrentView} />;
+      case 'user-dashboard':
+        return <UserDashboard onViewChange={setCurrentView} />;
       case 'calculator':
         return <CarbonCalculator onViewChange={setCurrentView} />;
       case 'history':
