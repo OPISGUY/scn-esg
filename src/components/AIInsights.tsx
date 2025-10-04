@@ -260,19 +260,19 @@ const AIInsights: React.FC = () => {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-600">Data Quality Score</span>
                       <span className="text-2xl font-bold text-green-600">
-                        {validationResult.validation_score}%
+                        {validationResult.validation_score ?? 0}%
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
                         className="bg-green-500 h-2 rounded-full transition-all"
-                        style={{ width: `${validationResult.validation_score}%` }}
+                        style={{ width: `${validationResult.validation_score ?? 0}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Anomalies */}
-                  {validationResult.anomalies.length > 0 && (
+                  {validationResult.anomalies && validationResult.anomalies.length > 0 && (
                     <div>
                       <h3 className="text-lg font-medium text-gray-900 mb-3">Detected Anomalies</h3>
                       <div className="space-y-2">
@@ -339,37 +339,43 @@ const AIInsights: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="text-2xl font-bold text-blue-600">
-                        {benchmarkResult.percentile_ranking}%
+                        {benchmarkResult.percentile_ranking ?? 'N/A'}%
                       </div>
                       <div className="text-sm text-gray-600">Percentile Ranking</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="text-2xl font-bold text-green-600">
-                        {benchmarkResult.performance_vs_average > 0 ? '+' : ''}
-                        {benchmarkResult.performance_vs_average.toFixed(1)}%
+                        {benchmarkResult.performance_vs_average !== undefined && benchmarkResult.performance_vs_average !== null ? (
+                          <>
+                            {benchmarkResult.performance_vs_average > 0 ? '+' : ''}
+                            {benchmarkResult.performance_vs_average.toFixed(1)}%
+                          </>
+                        ) : 'N/A'}
                       </div>
                       <div className="text-sm text-gray-600">vs Industry Average</div>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="text-2xl font-bold text-gray-600">
-                        {benchmarkResult.industry_average.toLocaleString()}
+                        {benchmarkResult.industry_average?.toLocaleString() ?? 'N/A'}
                       </div>
                       <div className="text-sm text-gray-600">Industry Average (tCO₂e)</div>
                     </div>
                   </div>
 
                   {/* Improvement Opportunities */}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Improvement Opportunities</h3>
-                    <div className="space-y-2">
-                      {benchmarkResult.improvement_opportunities.map((opportunity, index) => (
-                        <div key={index} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg">
-                          <Target className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-green-800">{opportunity}</span>
-                        </div>
-                      ))}
+                  {benchmarkResult.improvement_opportunities && benchmarkResult.improvement_opportunities.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-3">Improvement Opportunities</h3>
+                      <div className="space-y-2">
+                        {benchmarkResult.improvement_opportunities.map((opportunity, index) => (
+                          <div key={index} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg">
+                            <Target className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm text-green-800">{opportunity}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>

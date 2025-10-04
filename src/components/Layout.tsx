@@ -86,7 +86,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange }) 
             </div>
             
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
+            <nav className="hidden md:flex items-center gap-1 flex-wrap max-w-4xl">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 const stepNumber = getStepNumber(item.id);
@@ -94,15 +94,15 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange }) 
                   <button
                     key={item.id}
                     onClick={() => onViewChange(item.id)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 relative group ${
+                    className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5 relative group ${
                       currentView === item.id
                         ? 'bg-green-100 text-green-700 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                     title={item.description}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="whitespace-nowrap">{item.name}</span>
+                    <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="whitespace-nowrap text-xs">{item.name}</span>
                     {stepNumber && (
                       <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
                         {stepNumber}
