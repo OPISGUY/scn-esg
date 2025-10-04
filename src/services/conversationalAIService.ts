@@ -3,7 +3,7 @@
  * API client for context-aware conversational data extraction
  */
 
-import { buildApiUrl } from '../utils/api';
+import { getApiBaseUrl } from '../utils/api';
 
 // ============================================================================
 // TypeScript Types
@@ -143,7 +143,14 @@ class ConversationalAIService {
   private accessToken: string | null = null;
 
   constructor() {
-    this.baseUrl = buildApiUrl('/carbon/ai');
+    // Ensure we always include /api/v1 in the path
+    const baseApiUrl = getApiBaseUrl();
+    // If baseApiUrl already includes /api/v1, don't add it again
+    if (baseApiUrl.includes('/api/v1')) {
+      this.baseUrl = `${baseApiUrl}/carbon/ai`;
+    } else {
+      this.baseUrl = `${baseApiUrl}/api/v1/carbon/ai`;
+    }
     console.log('🔧 ConversationalAIService baseUrl:', this.baseUrl);
   }
 
