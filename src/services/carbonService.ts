@@ -2,7 +2,12 @@ import { buildApiUrl } from '../utils/api';
 
 export interface CarbonFootprintData {
   id?: string;
-  company?: string;
+  company?: number; // Company ID
+  company_data?: {
+    id: number;
+    name: string;
+    industry?: string;
+  };
   reporting_period: string;
   scope1_emissions: number;
   scope2_emissions: number;

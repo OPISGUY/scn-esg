@@ -1,63 +1,95 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  MessageCircle, 
-  Send, 
-  Mic, 
-  MicOff, 
-  Brain, 
-  CheckCircle,
-  Loader2,
-  Calculator,
-  Save,
-  AlertCircle
-} from 'lucide-react';
-import { carbonService } from '../services/carbonService';
-import { useAuth } from '../contexts/AuthContext';
+/**
+ * ConversationalDataEntry - Smart Data Entry Component (Phase 1 MVP)
+ * Real AI integration with context-aware conversational extraction
+ */
 
-interface Message {
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  MessageCircle,
+  Send,
+  Mic,
+  MicOff,
+  Brain,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  Paperclip,
+  X,
+  FileText,
+} from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { carbonService } from '../services/carbonService';
+import {
+  conversationalAIService,
+  type ExtractedData,
+  type ConversationalExtractionResponse,
+} from '../services/conversationalAIService';
+import {
+  documentService,
+  type UploadDocumentResponse,
+} from '../services/documentService';
+import LiveFootprintPreview from './LiveFootprintPreview';
+import DocumentUploadZone from './DocumentUploadZone';
+
+interface ConversationalMessage {
   id: string;
-  type: 'user' | 'ai' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'document';
   content: string;
   timestamp: Date;
-  suggestedFields?: Array<{
-    field: string;
-    value: any;
-    unit?: string;
-    confidence: number;
-  }>;
+  extractedData?: ExtractedData | null;
+  confidenceScore?: number;
+  documentId?: string;
+  documentName?: string;
+  documentType?: string;
+}
+
+interface PendingChange {
+  field: 'scope1_emissions' | 'scope2_emissions' | 'scope3_emissions';
+  operation: 'add' | 'set' | 'subtract';
+  value: number;
+  confidence: number;
+  activity_type?: string;
+  messageId?: string;
 }
 
 interface ConversationalDataEntryProps {
   onDataExtracted?: (data: any) => void;
 }
 
-const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({ 
-  onDataExtracted
+const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
+  onDataExtracted,
 }) => {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([
+
+  // State
+  const [messages, setMessages] = useState<ConversationalMessage[]>([
     {
       id: '1',
-      type: 'ai',
+      role: 'assistant',
       content: `Hi! I'm your AI assistant for carbon data entry. You can describe your emissions in natural language, and I'll help structure the data. Try saying something like "We used 5000 kWh of electricity last month" or "Our delivery trucks traveled 10,000 miles this quarter".`,
-      timestamp: new Date()
-    }
+      timestamp: new Date(),
+    },
   ]);
+
   const [inputValue, setInputValue] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [extractedData, setExtractedData] = useState<any>({});
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [currentFootprintId, setCurrentFootprintId] = useState<string | null>(null);
+  const [currentFootprint, setCurrentFootprint] = useState<any>(null);
+  const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognition = useRef<any>(null);
 
+  // Initialize speech recognition
   useEffect(() => {
-    // Initialize speech recognition if available
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const SpeechRecognition =
+        (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       recognition.current = new SpeechRecognition();
       recognition.current.continuous = false;
       recognition.current.interimResults = false;
@@ -85,150 +117,318 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
     };
   }, []);
 
+  // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const processConversationalInput = async (userInput: string) => {
-    setIsProcessing(true);
-    
-    try {
-      // Mock AI processing - in real app this would call the backend
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
-      
-      // Mock response based on input content
-      let aiResponse = '';
-      let suggestedFields: any[] = [];
+  // Load or create carbon footprint on mount
+  useEffect(() => {
+    const loadFootprint = async () => {
+      if (!user) return;
 
-      if (userInput.toLowerCase().includes('electricity') || userInput.toLowerCase().includes('kwh')) {
-        const kwhMatch = userInput.match(/(\d+(?:,\d+)*(?:\.\d+)?)\s*kwh/i);
-        if (kwhMatch) {
-          const kwhValue = parseFloat(kwhMatch[1].replace(/,/g, ''));
-          suggestedFields = [
-            {
-              field: 'electricity_consumption',
-              value: kwhValue,
-              unit: 'kWh',
-              confidence: 95
-            },
-            {
-              field: 'scope2_emissions',
-              value: (kwhValue * 0.4532).toFixed(2), // Mock emission factor
-              unit: 'tCO2e',
-              confidence: 90
-            }
-          ];
-          aiResponse = `Great! I detected electricity consumption of ${kwhValue.toLocaleString()} kWh. Based on the average grid emission factor, this equals approximately ${(kwhValue * 0.4532 / 1000).toFixed(2)} tCO₂e in Scope 2 emissions. Would you like to specify the grid region for more accurate factors?`;
-        }
-      } else if (userInput.toLowerCase().includes('fuel') || userInput.toLowerCase().includes('gas')) {
-        const gallonMatch = userInput.match(/(\d+(?:,\d+)*(?:\.\d+)?)\s*gallon/i);
-        const literMatch = userInput.match(/(\d+(?:,\d+)*(?:\.\d+)?)\s*liter/i);
+      try {
+        // Get user's most recent footprint or create new one
+        const footprints = await carbonService.getFootprints();
         
-        if (gallonMatch || literMatch) {
-          const value = gallonMatch ? parseFloat(gallonMatch[1].replace(/,/g, '')) : parseFloat(literMatch![1].replace(/,/g, ''));
-          const unit = gallonMatch ? 'gallons' : 'liters';
-          const emissionFactor = gallonMatch ? 8.89 : 2.35; // kg CO2/gallon vs kg CO2/liter
-          
-          suggestedFields = [
-            {
-              field: 'fuel_consumption',
-              value: value,
-              unit: unit,
-              confidence: 95
-            },
-            {
-              field: 'scope1_emissions',
-              value: (value * emissionFactor / 1000).toFixed(2),
-              unit: 'tCO2e',
-              confidence: 90
-            }
-          ];
-          aiResponse = `I detected fuel consumption of ${value.toLocaleString()} ${unit}. This generates approximately ${(value * emissionFactor / 1000).toFixed(2)} tCO₂e in Scope 1 emissions. What type of fuel was this?`;
+        if (footprints && footprints.length > 0) {
+          // Use most recent
+          const latest = footprints[0];
+          if (latest.id) {
+            setCurrentFootprintId(latest.id);
+            setCurrentFootprint({
+              scope1_emissions: Number(latest.scope1_emissions),
+              scope2_emissions: Number(latest.scope2_emissions),
+              scope3_emissions: Number(latest.scope3_emissions),
+              total_emissions: Number(latest.total_emissions),
+            });
+          }
+        } else {
+          // Create a new draft footprint
+          const newFootprint = await carbonService.createFootprint({
+            reporting_period: new Date().getFullYear().toString(),
+            scope1_emissions: 0,
+            scope2_emissions: 0,
+            scope3_emissions: 0,
+            status: 'draft',
+          });
+          if (newFootprint.id) {
+            setCurrentFootprintId(newFootprint.id);
+            setCurrentFootprint({
+              scope1_emissions: 0,
+              scope2_emissions: 0,
+              scope3_emissions: 0,
+              total_emissions: 0,
+            });
+          }
         }
-      } else if (userInput.toLowerCase().includes('travel') || userInput.toLowerCase().includes('miles') || userInput.toLowerCase().includes('km')) {
-        const milesMatch = userInput.match(/(\d+(?:,\d+)*(?:\.\d+)?)\s*miles/i);
-        const kmMatch = userInput.match(/(\d+(?:,\d+)*(?:\.\d+)?)\s*km/i);
-        
-        if (milesMatch || kmMatch) {
-          const value = milesMatch ? parseFloat(milesMatch[1].replace(/,/g, '')) : parseFloat(kmMatch![1].replace(/,/g, ''));
-          const unit = milesMatch ? 'miles' : 'km';
-          const emissionFactor = milesMatch ? 0.404 : 0.251; // kg CO2/mile vs kg CO2/km for average car
-          
-          suggestedFields = [
-            {
-              field: 'business_travel',
-              value: value,
-              unit: unit,
-              confidence: 85
-            },
-            {
-              field: 'scope3_emissions',
-              value: (value * emissionFactor / 1000).toFixed(2),
-              unit: 'tCO2e',
-              confidence: 80
-            }
-          ];
-          aiResponse = `I detected business travel of ${value.toLocaleString()} ${unit}. Assuming average vehicle emissions, this is approximately ${(value * emissionFactor / 1000).toFixed(2)} tCO₂e in Scope 3 emissions. Was this by car, plane, or other transport?`;
-        }
-      } else {
-        aiResponse = `I received your input: "${userInput}". Could you provide more specific details about quantities, units, or activities? For example, mention kWh for electricity, gallons/liters for fuel, or miles/km for travel.`;
+      } catch (error) {
+        console.error('Failed to load footprint:', error);
+        setError('Failed to load carbon footprint. Please refresh the page.');
+      }
+    };
+
+    loadFootprint();
+  }, [user]);
+
+  // Set auth token when user changes
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      conversationalAIService.setAccessToken(token);
+    }
+  }, [user]);
+
+  // Handle sending message
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isProcessing || !currentFootprintId) return;
+
+    const userMessage: ConversationalMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: inputValue,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputValue;
+    setInputValue('');
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // Build conversation history (last 10 messages)
+      const conversationHistory = messages
+        .filter((msg) => msg.role !== 'document')  // Filter out document messages
+        .slice(-10)
+        .map((msg) => ({
+          role: msg.role as 'user' | 'assistant' | 'system',
+          content: msg.content,
+        }));
+
+      // Call AI extraction API
+      const result: ConversationalExtractionResponse =
+        await conversationalAIService.extractFromConversation(
+          currentInput,
+          conversationHistory,
+          currentFootprintId,
+          sessionId || undefined
+        );
+
+      // Update session ID if this is first message
+      if (!sessionId && result.session_id) {
+        setSessionId(result.session_id);
       }
 
-      return { response: aiResponse, fields: suggestedFields };
+      // Add AI response message
+      const aiMessage: ConversationalMessage = {
+        id: result.message_id || (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: result.ai_response,
+        timestamp: new Date(),
+        extractedData: result.extracted_data,
+        confidenceScore: result.extracted_data?.confidence,
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+
+      // If data was extracted, add to pending changes
+      if (result.extracted_data && result.suggested_actions && result.suggested_actions.length > 0) {
+        const newChanges: PendingChange[] = result.suggested_actions
+          .filter((action) => action.type === 'update_footprint')
+          .map((action) => ({
+            field: action.field,
+            operation: action.operation,
+            value: action.value,
+            confidence: result.extracted_data!.confidence,
+            activity_type: result.extracted_data!.activity_type,
+            messageId: result.message_id,
+          }));
+
+        setPendingChanges((prev) => [...prev, ...newChanges]);
+
+        // Notify parent if callback provided
+        if (onDataExtracted) {
+          onDataExtracted(result.extracted_data);
+        }
+      }
+
+      // Show clarifying questions if any
+      if (result.clarifying_questions && result.clarifying_questions.length > 0) {
+        const questionsMessage: ConversationalMessage = {
+          id: (Date.now() + 2).toString(),
+          role: 'system',
+          content: '❓ ' + result.clarifying_questions.join('\n'),
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, questionsMessage]);
+      }
+
+      // Show warnings if validation has issues
+      if (result.validation?.status === 'warning' && result.validation.warnings.length > 0) {
+        const warningMessage: ConversationalMessage = {
+          id: (Date.now() + 3).toString(),
+          role: 'system',
+          content: '⚠️ ' + result.validation.warnings.join('\n'),
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, warningMessage]);
+      }
     } catch (error) {
       console.error('Error processing conversational input:', error);
-      return { 
-        response: 'Sorry, I had trouble processing that input. Could you try rephrasing it?', 
-        fields: [] 
+      
+      const errorMessage: ConversationalMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'system',
+        content: `❌ Sorry, I had trouble processing that. ${
+          error instanceof Error ? error.message : 'Please try again.'
+        }`,
+        timestamp: new Date(),
       };
+      setMessages((prev) => [...prev, errorMessage]);
+      setError(error instanceof Error ? error.message : 'Processing error');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+  // Handle accepting a pending change
+  const handleAcceptChange = async (change: PendingChange) => {
+    if (!currentFootprintId) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: inputValue,
-      timestamp: new Date()
-    };
+    try {
+      // Build update data
+      const updateData = {
+        [change.field]: {
+          operation: change.operation,
+          value: change.value,
+          source: 'conversational_extraction',
+          confidence: change.confidence,
+          metadata: {
+            activity_type: change.activity_type,
+          },
+        },
+      };
 
-    setMessages(prev => [...prev, userMessage]);
-    const currentInput = inputValue;
-    setInputValue('');
-
-    // Process the input with AI
-    const result = await processConversationalInput(currentInput);
-
-    const aiMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      type: 'ai',
-      content: result.response,
-      timestamp: new Date(),
-      suggestedFields: result.fields
-    };
-
-    setMessages(prev => [...prev, aiMessage]);
-
-    // Update extracted data
-    if (result.fields.length > 0) {
-      const newData = { ...extractedData };
-      result.fields.forEach(field => {
-        newData[field.field] = {
-          value: field.value,
-          unit: field.unit,
-          confidence: field.confidence,
-          timestamp: new Date()
-        };
+      // Update footprint
+      const result = await conversationalAIService.updateWithContext({
+        footprint_id: currentFootprintId,
+        update_data: updateData,
+        conversation_message_id: change.messageId,
+        user_confirmed: true,
       });
-      setExtractedData(newData);
-      onDataExtracted?.(newData);
+
+      // Update local footprint state
+      if (result.updated_footprint) {
+        setCurrentFootprint({
+          scope1_emissions: result.updated_footprint.scope1_emissions,
+          scope2_emissions: result.updated_footprint.scope2_emissions,
+          scope3_emissions: result.updated_footprint.scope3_emissions,
+          total_emissions: result.updated_footprint.total_emissions,
+        });
+      }
+
+      // Remove from pending changes
+      setPendingChanges((prev) => prev.filter((c) => c !== change));
+
+      // Add success message
+      const successMessage: ConversationalMessage = {
+        id: Date.now().toString(),
+        role: 'system',
+        content: `✅ Updated ${change.field.replace(/_/g, ' ')}: ${
+          change.operation === 'add' ? '+' : ''
+        }${change.value.toFixed(2)} tCO₂e`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, successMessage]);
+    } catch (error) {
+      console.error('Error accepting change:', error);
+      
+      const errorMessage: ConversationalMessage = {
+        id: Date.now().toString(),
+        role: 'system',
+        content: `❌ Failed to update footprint: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     }
   };
 
+  // Handle rejecting a pending change
+  const handleRejectChange = (change: PendingChange) => {
+    setPendingChanges((prev) => prev.filter((c) => c !== change));
+
+    const rejectMessage: ConversationalMessage = {
+      id: Date.now().toString(),
+      role: 'system',
+      content: `❌ Rejected change to ${change.field.replace(/_/g, ' ')}`,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, rejectMessage]);
+  };
+
+  // Handle document upload
+  const handleDocumentUploadComplete = async (response: UploadDocumentResponse) => {
+    setUploadingDocument(false);
+    setShowDocumentUpload(false);
+
+    // Add document message to conversation
+    const documentMessage: ConversationalMessage = {
+      id: response.document_id,
+      role: 'document',
+      content: `📄 Uploaded document: ${response.file_name} (${response.file_size_display})`,
+      timestamp: new Date(),
+      documentId: response.document_id,
+      documentName: response.file_name,
+      documentType: response.document_type,
+    };
+    setMessages((prev) => [...prev, documentMessage]);
+
+    // Fetch full document details including extracted data
+    try {
+      const fullDoc = await documentService.getDocument(response.document_id);
+      
+      // Show extraction status
+      const statusMessage: ConversationalMessage = {
+        id: `${response.document_id}-status`,
+        role: 'assistant',
+        content: `Document extraction ${fullDoc.extraction_status}. ${
+          fullDoc.extracted_data ? 'I found some information in your document!' : 'Processing...'
+        }`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, statusMessage]);
+
+      // Show prompt to validate document
+      if (fullDoc.extraction_status === 'completed') {
+        const promptMessage: ConversationalMessage = {
+          id: `${response.document_id}-prompt`,
+          role: 'assistant',
+          content: `Would you like me to help you validate and apply this data to your footprint? You can say "validate the document" or "apply the document data".`,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, promptMessage]);
+      }
+    } catch (err) {
+      console.error('Error fetching document details:', err);
+    }
+  };
+
+  const handleDocumentUploadError = (error: string) => {
+    setUploadingDocument(false);
+
+    const errorMessage: ConversationalMessage = {
+      id: Date.now().toString(),
+      role: 'system',
+      content: `❌ Document upload failed: ${error}`,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, errorMessage]);
+  };
+
+  // Handle voice input
   const handleVoiceInput = () => {
     if (!recognition.current) {
       alert('Speech recognition is not supported in your browser.');
@@ -244,28 +444,7 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
     }
   };
 
-  const acceptSuggestedField = (_messageId: string, field: any) => {
-    const newData = { ...extractedData };
-    newData[field.field] = {
-      value: field.value,
-      unit: field.unit,
-      confidence: field.confidence,
-      accepted: true,
-      timestamp: new Date()
-    };
-    setExtractedData(newData);
-    onDataExtracted?.(newData);
-
-    // Add system message
-    const systemMessage: Message = {
-      id: Date.now().toString(),
-      type: 'system',
-      content: `✓ Added ${field.field}: ${field.value} ${field.unit || ''}`,
-      timestamp: new Date()
-    };
-    setMessages(prev => [...prev, systemMessage]);
-  };
-
+  // Handle key press
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -273,241 +452,223 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
     }
   };
 
-  const handleSaveToFootprint = async () => {
-    if (!user) {
-      setSaveError('Please log in to save your data');
-      return;
-    }
-
-    if (Object.keys(extractedData).length === 0) {
-      setSaveError('No data to save. Please extract some emissions data first.');
-      return;
-    }
-
-    setIsSaving(true);
-    setSaveError(null);
-    setSaveSuccess(false);
-
-    try {
-      // Calculate emissions from extracted data
-      const scope1 = Number(extractedData.scope1_emissions?.value || 0);
-      const scope2 = Number(extractedData.scope2_emissions?.value || 0);
-      const scope3 = Number(extractedData.scope3_emissions?.value || 0);
-
-      console.log('Saving footprint with data:', { scope1, scope2, scope3 });
-
-      // Validate that we have at least some emissions
-      if (scope1 === 0 && scope2 === 0 && scope3 === 0) {
-        throw new Error('Please extract emission values before saving. All scopes are zero.');
-      }
-
-      // Create footprint
-      await carbonService.createFootprint({
-        reporting_period: new Date().getFullYear().toString(),
-        scope1_emissions: scope1,
-        scope2_emissions: scope2,
-        scope3_emissions: scope3,
-        status: 'draft'
-      });
-
-      setSaveSuccess(true);
-      
-      // Add success message
-      const systemMessage: Message = {
-        id: Date.now().toString(),
-        type: 'system',
-        content: `✅ Data saved successfully! Your carbon footprint has been created.`,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, systemMessage]);
-
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (error) {
-      console.error('Failed to save footprint:', error);
-      setSaveError(error instanceof Error ? error.message : 'Failed to save data');
-      
-      // Add error message
-      const systemMessage: Message = {
-        id: Date.now().toString(),
-        type: 'system',
-        content: `❌ Failed to save data: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, systemMessage]);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-t-2xl p-6 text-white">
-        <div className="flex items-center gap-3">
-          <Brain className="w-6 h-6" />
-          <h2 className="text-xl font-bold">AI-Powered Data Entry</h2>
-          <MessageCircle className="w-5 h-5 opacity-75" />
-        </div>
-        <p className="text-green-100 mt-2">
-          Describe your emissions naturally - I'll extract the structured data
-        </p>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 bg-white p-6 space-y-4 overflow-y-auto" style={{ maxHeight: '400px' }}>
-        {messages.map((message) => (
-          <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-              message.type === 'user' 
-                ? 'bg-blue-600 text-white' 
-                : message.type === 'system'
-                ? 'bg-green-50 text-green-800 border border-green-200'
-                : 'bg-gray-100 text-gray-800'
-            }`}>
-              <p className="text-sm">{message.content}</p>
-              
-              {/* Suggested Fields */}
-              {message.suggestedFields && message.suggestedFields.length > 0 && (
-                <div className="mt-3 space-y-2">
-                  <p className="text-xs font-medium text-gray-600">Extracted data:</p>
-                  {message.suggestedFields.map((field, index) => (
-                    <div key={index} className="bg-blue-50 rounded p-2 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">
-                          {field.field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                        </span>
-                        <span className="text-blue-600">{field.confidence}% confident</span>
-                      </div>
-                      <div className="flex items-center justify-between mt-1">
-                        <span>{field.value} {field.unit}</span>
-                        <button
-                          onClick={() => acceptSuggestedField(message.id, field)}
-                          className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                        >
-                          <CheckCircle className="w-3 h-3" />
-                          Accept
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <p className="text-xs opacity-75 mt-2">
-                {message.timestamp.toLocaleTimeString()}
-              </p>
-            </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+      {/* Left: Conversation Panel */}
+      <div className="flex flex-col h-full max-h-[800px]">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-t-2xl p-6 text-white">
+          <div className="flex items-center gap-3">
+            <Brain className="w-6 h-6" />
+            <h2 className="text-xl font-bold">Smart Data Entry</h2>
+            <MessageCircle className="w-5 h-5 opacity-75" />
           </div>
-        ))}
-        
-        {isProcessing && (
-          <div className="flex justify-start">
-            <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm">AI is processing...</span>
+          <p className="text-green-100 mt-2 text-sm">
+            Describe your emissions naturally - I'll extract and validate the data
+          </p>
+          {sessionId && (
+            <div className="mt-2 text-xs text-green-100 opacity-75">
+              Session: {sessionId.slice(0, 8)}...
+            </div>
+          )}
+        </div>
+
+        {/* Error Banner */}
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500" />
+            <div>
+              <p className="text-sm font-medium text-red-800">Error</p>
+              <p className="text-xs text-red-600">{error}</p>
             </div>
           </div>
         )}
-        
-        <div ref={messagesEndRef} />
-      </div>
 
-      {/* Input */}
-      <div className="bg-gray-50 p-4 rounded-b-2xl border-t border-gray-200">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 relative">
-            <textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Describe your emissions... (e.g., 'We used 5000 kWh of electricity')"
-              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows={2}
-              disabled={isProcessing}
-            />
-            <button
-              onClick={handleVoiceInput}
-              className={`absolute right-2 top-2 p-1 rounded-full transition-colors ${
-                isListening 
-                  ? 'bg-red-100 text-red-600' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-              title={isListening ? 'Stop listening' : 'Start voice input'}
+        {/* Messages */}
+        <div
+          className="flex-1 bg-white p-6 space-y-4 overflow-y-auto"
+          style={{ maxHeight: 'calc(100% - 200px)' }}
+        >
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-            </button>
-          </div>
-          <button
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isProcessing}
-            className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+              <div
+                className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
+                  message.role === 'user'
+                    ? 'bg-blue-600 text-white'
+                    : message.role === 'system'
+                    ? 'bg-yellow-50 text-yellow-900 border border-yellow-200'
+                    : message.role === 'document'
+                    ? 'bg-purple-50 text-purple-900 border border-purple-200'
+                    : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
 
-      {/* Extracted Data Summary */}
-      {Object.keys(extractedData).length > 0 && (
-        <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-green-600" />
-              <h3 className="font-medium text-green-800">Extracted Data Summary</h3>
-            </div>
-            <button
-              onClick={handleSaveToFootprint}
-              disabled={isSaving}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  Save to Footprint
-                </>
-              )}
-            </button>
-          </div>
+                {/* Document Info */}
+                {message.role === 'document' && message.documentType && (
+                  <div className="mt-2 flex items-center gap-2 text-xs">
+                    <FileText className="w-4 h-4" />
+                    <span className="font-medium">
+                      {message.documentType.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                )}
 
-          {saveSuccess && (
-            <div className="mb-3 bg-green-100 border border-green-300 rounded-lg p-3 flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <p className="text-green-800 text-sm font-medium">Data saved successfully!</p>
-            </div>
-          )}
+                {/* Extracted Data Preview */}
+                {message.extractedData && (
+                  <div className="mt-3 p-3 bg-white bg-opacity-90 rounded border border-gray-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-xs font-semibold text-gray-700">Extracted Data</span>
+                    </div>
+                    <div className="space-y-1 text-xs text-gray-600">
+                      <div>
+                        <strong>Activity:</strong> {message.extractedData.activity_type}
+                      </div>
+                      <div>
+                        <strong>Scope {message.extractedData.scope}:</strong>{' '}
+                        {message.extractedData.quantity} {message.extractedData.unit}
+                      </div>
+                      <div>
+                        <strong>Emissions:</strong> {message.extractedData.calculated_emissions.toFixed(2)}{' '}
+                        tCO₂e
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div
+                          className={`px-2 py-0.5 rounded text-xs font-medium ${
+                            message.confidenceScore && message.confidenceScore >= 0.9
+                              ? 'bg-green-100 text-green-700'
+                              : message.confidenceScore && message.confidenceScore >= 0.7
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {message.confidenceScore
+                            ? `${(message.confidenceScore * 100).toFixed(0)}% confident`
+                            : 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-          {saveError && (
-            <div className="mb-3 bg-red-100 border border-red-300 rounded-lg p-3 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600" />
-              <p className="text-red-800 text-sm">{saveError}</p>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {Object.entries(extractedData).map(([key, data]: [string, any]) => (
-              <div key={key} className="bg-white rounded p-3 border border-green-100">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </span>
-                  {data.accepted && <CheckCircle className="w-4 h-4 text-green-600" />}
-                </div>
-                <div className="text-lg font-semibold text-gray-900">
-                  {data.value} {data.unit}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {data.confidence}% confidence
-                </div>
+                <p className="text-xs opacity-75 mt-2">{message.timestamp.toLocaleTimeString()}</p>
               </div>
-            ))}
+            </div>
+          ))}
+
+          {isProcessing && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 text-gray-800 px-4 py-3 rounded-lg flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm">AI is processing...</span>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input */}
+        <div className="bg-gray-50 p-4 rounded-b-2xl border-t border-gray-200">
+          <div className="flex items-center gap-2">
+            {/* Document Upload Button */}
+            <button
+              onClick={() => setShowDocumentUpload(true)}
+              disabled={isProcessing || !currentFootprintId}
+              className="p-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              title="Upload document"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+            
+            <div className="flex-1 relative">
+              <textarea
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Describe your emissions or upload a document..."
+                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                rows={2}
+                disabled={isProcessing || !currentFootprintId}
+              />
+              <button
+                onClick={handleVoiceInput}
+                className={`absolute right-2 top-2 p-1 rounded-full transition-colors ${
+                  isListening
+                    ? 'bg-red-100 text-red-600'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+                title={isListening ? 'Stop listening' : 'Start voice input'}
+              >
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+            </div>
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputValue.trim() || isProcessing || !currentFootprintId}
+              className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Document Upload Modal */}
+        {showDocumentUpload && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <FileText className="w-6 h-6" />
+                  Upload Document
+                </h3>
+                <button
+                  onClick={() => setShowDocumentUpload(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Close"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-600 mb-4">
+                Upload utility bills, invoices, meter readings, or other documents containing emissions data.
+                AI will automatically extract relevant information.
+              </p>
+
+              <DocumentUploadZone
+                onUploadComplete={handleDocumentUploadComplete}
+                onUploadError={handleDocumentUploadError}
+                conversationSessionId={sessionId || undefined}
+                footprintId={currentFootprintId || undefined}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Right: Live Footprint Preview */}
+      <div className="flex flex-col h-full max-h-[800px] overflow-y-auto">
+        {currentFootprint ? (
+          <LiveFootprintPreview
+            currentFootprint={currentFootprint}
+            pendingChanges={pendingChanges}
+            onAcceptChange={handleAcceptChange}
+            onRejectChange={handleRejectChange}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full bg-gray-50 rounded-2xl">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600">Loading footprint data...</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -125,6 +125,239 @@ class GeminiAIService:
         else:
             return {"message": "AI service response", "status": "success"}
 
+class ConversationalAIService:
+    """AI service for conversational data entry"""
+    
+    def __init__(self):
+        self.ai_service = GeminiAIService()
+    
+    def extract_from_conversation(
+        self,
+        user_message: str,
+        conversation_history: List[Dict[str, str]],
+        current_footprint: Optional[CarbonFootprint],
+        company_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Extract emissions data from conversational input with full context awareness.
+        This is the core method for Phase 1 MVP conversational intelligence.
+        """
+        
+        # Build context-rich prompt
+        company_name = company_context.get('name', 'Unknown Company')
+        industry = company_context.get('industry', 'General')
+        employees = company_context.get('employees', 'Not specified')
+        
+        # Format current footprint data
+        footprint_context = ""
+        if current_footprint:
+            footprint_context = f"""
+Current Footprint (Period: {current_footprint.reporting_period}):
+- Scope 1: {current_footprint.scope1_emissions} tCO2e (Direct emissions from owned sources)
+- Scope 2: {current_footprint.scope2_emissions} tCO2e (Indirect emissions from purchased energy)
+- Scope 3: {current_footprint.scope3_emissions} tCO2e (Indirect emissions from value chain)
+- Total: {current_footprint.total_emissions} tCO2e
+"""
+        else:
+            footprint_context = "No existing footprint data. This will be the first entry."
+        
+        # Format conversation history (last 10 messages)
+        history_text = ""
+        if conversation_history:
+            recent_history = conversation_history[-10:]  # Last 10 messages
+            history_text = "\n".join([
+                f"{msg['role'].upper()}: {msg['content']}"
+                for msg in recent_history
+            ])
+        
+        prompt = f"""You are an expert ESG data extraction assistant for {company_name}, a {industry} company with {employees} employees.
+
+{footprint_context}
+
+Recent Conversation History:
+{history_text if history_text else "No previous conversation."}
+
+User just said: "{user_message}"
+
+Your task is to:
+1. Extract any emissions-related data mentioned (quantities, units, activities, time periods)
+2. Identify which emission scope it belongs to (1, 2, or 3)
+3. Calculate emissions using appropriate emission factors
+4. Validate if the data seems reasonable
+5. Ask clarifying questions if needed
+
+Emission Factor Guidelines:
+- Electricity (Scope 2): US average 0.453 kg CO2/kWh (adjust by region if mentioned)
+- Natural Gas (Scope 1): 0.184 kg CO2/kWh combustion
+- Gasoline (Scope 1): 8.89 kg CO2/gallon or 2.35 kg CO2/liter
+- Diesel (Scope 1): 10.21 kg CO2/gallon or 2.68 kg CO2/liter
+- Car Travel (Scope 1/3): 0.368 kg CO2/mile for gasoline vehicles
+- Air Travel (Scope 3): 0.255 kg CO2/mile domestic, 0.195 kg CO2/mile international
+
+Context Awareness Rules:
+- If user says "add 200 more" or "same as last month", reference the conversation history
+- If user mentions currency (e.g., "$500 electricity bill"), note that you need kWh for accuracy
+- If values seem unusually high/low compared to current footprint, flag it
+
+Respond in this EXACT JSON format (no additional text):
+{{
+  "extracted_data": {{
+    "activity_type": "electricity_consumption | fuel_combustion | vehicle_fuel | business_travel | etc",
+    "scope": 1 | 2 | 3,
+    "quantity": <number>,
+    "unit": "kWh | gallons | liters | miles | km | etc",
+    "period": "YYYY-MM | YYYY-QN | specific dates",
+    "emission_factor": <number>,
+    "emission_factor_source": "description of which factor used",
+    "calculated_emissions": <number in tCO2e>,
+    "confidence": <0.0-1.0>,
+    "location": "if mentioned for regional factors"
+  }},
+  "validation": {{
+    "status": "ok | warning | needs_clarification",
+    "anomalies": ["list of unusual patterns detected"],
+    "warnings": ["list of data quality concerns"],
+    "comparison_to_current": "how this compares to existing footprint"
+  }},
+  "ai_response": "Natural language response to the user, confirming what was extracted and any questions",
+  "clarifying_questions": ["specific questions if data is ambiguous or incomplete"],
+  "suggested_actions": [
+    {{
+      "type": "update_footprint",
+      "field": "scope1_emissions | scope2_emissions | scope3_emissions",
+      "operation": "add | set | subtract",
+      "value": <number>,
+      "requires_confirmation": true | false
+    }}
+  ]
+}}
+
+IMPORTANT: 
+- If you cannot extract meaningful emissions data, set extracted_data to null and explain why in ai_response
+- Always provide confidence scores honestly (0.5-0.7 for uncertain, 0.8-0.95 for confident, 0.95+ for certain)
+- Be conversational and helpful in ai_response
+- Flag any data that seems off (e.g., 10x higher than usual)"""
+        
+        result = self.ai_service._call_gemini(prompt)
+        
+        # Ensure result has required structure
+        if not isinstance(result, dict):
+            result = {
+                "extracted_data": None,
+                "validation": {"status": "error", "anomalies": [], "warnings": []},
+                "ai_response": "I had trouble processing that input. Could you try rephrasing?",
+                "clarifying_questions": [],
+                "suggested_actions": []
+            }
+        
+        return result
+    
+    def predict_next_value(
+        self,
+        activity_type: str,
+        period: str,
+        historical_data: List[Dict[str, Any]],
+        company_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Use AI to predict the next value based on historical patterns.
+        Phase 3 feature: Predictive auto-fill.
+        """
+        
+        prompt = f"""Analyze this historical {activity_type} data and predict the likely value for {period}.
+
+Company Context:
+- Name: {company_context.get('name', 'Unknown')}
+- Industry: {company_context.get('industry', 'General')}
+
+Historical Data:
+{json.dumps(historical_data, indent=2)}
+
+Consider:
+- Seasonal patterns (summer vs winter for energy, travel patterns for transport)
+- Growth trends (is usage increasing, stable, or decreasing?)
+- Any anomalies or outliers in the data
+- Business context (company growth, efficiency initiatives, new facilities)
+
+Provide prediction with confidence interval in this JSON format:
+{{
+  "predicted_value": <number>,
+  "unit": "<unit>",
+  "confidence_interval": {{
+    "low": <number>,
+    "high": <number>,
+    "confidence_level": 0.95
+  }},
+  "reasoning": "Explanation of why this prediction makes sense",
+  "factors_considered": ["list of factors that influenced prediction"],
+  "seasonal_adjustment": <number or null>,
+  "growth_trend": "increasing | stable | decreasing",
+  "confidence_score": <0.0-1.0>
+}}"""
+        
+        return self.ai_service._call_gemini(prompt)
+    
+    def generate_proactive_guidance(
+        self,
+        current_footprint: Optional[CarbonFootprint],
+        company_context: Dict[str, Any],
+        data_completeness: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Generate proactive guidance for what data the user should enter next.
+        Phase 3 feature: Proactive guidance.
+        """
+        
+        completeness_pct = data_completeness.get('percentage', 0)
+        missing_categories = data_completeness.get('missing', [])
+        
+        footprint_data = ""
+        if current_footprint:
+            footprint_data = f"""
+Current data:
+- Scope 1: {current_footprint.scope1_emissions} tCO2e
+- Scope 2: {current_footprint.scope2_emissions} tCO2e
+- Scope 3: {current_footprint.scope3_emissions} tCO2e
+- Completeness: {completeness_pct}%
+"""
+        
+        prompt = f"""You are an ESG reporting guide for {company_context.get('name')}, a {company_context.get('industry')} company.
+
+{footprint_data}
+
+Missing data categories: {', '.join(missing_categories) if missing_categories else 'None'}
+
+Your task is to guide the user through complete emissions reporting by:
+1. Prioritizing the most material emission sources for their industry
+2. Asking specific, actionable questions
+3. Providing context about why each data point matters
+4. Making the process feel achievable, not overwhelming
+
+Generate a conversational guidance message that:
+- Acknowledges what they've completed so far
+- Suggests the next most important data to enter
+- Explains why it's important
+- Gives examples of what to look for
+
+Respond in JSON format:
+{{
+  "guidance_message": "Conversational message to the user",
+  "next_steps": [
+    {{
+      "category": "electricity | fuel | travel | etc",
+      "priority": "high | medium | low",
+      "reason": "why this is important",
+      "examples": ["concrete examples of what to enter"],
+      "typical_sources": ["where to find this data"]
+    }}
+  ],
+  "progress_encouragement": "Positive message about their progress",
+  "completeness_score": <0-100>
+}}"""
+        
+        return self.ai_service._call_gemini(prompt)
+
+
 class AIDataValidator:
     """AI-powered data validation service"""
     
@@ -444,3 +677,441 @@ class AIPredictiveAnalytics:
         cache.set(cache_key, result, 43200)
         
         return result
+
+
+# ============================================================
+# Phase 2: Multi-Modal Document Vision Service
+# ============================================================
+
+class GeminiVisionService:
+    """
+    Service for extracting structured data from documents using Gemini Vision API
+    Handles utility bills, meter photos, fuel receipts, travel receipts, etc.
+    """
+    
+    def __init__(self):
+        """Initialize Gemini Vision API client"""
+        api_key = getattr(settings, 'GEMINI_API_KEY', None)
+        if api_key and api_key != 'your-gemini-api-key-here':
+            try:
+                genai.configure(api_key=api_key)
+                self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                logger.info("Gemini Vision service initialized with gemini-2.0-flash-exp")
+            except Exception as e:
+                logger.error(f"Failed to configure Gemini Vision: {str(e)}")
+                self.model = None
+        else:
+            logger.warning("Gemini API key not configured. Vision extraction will return mock data.")
+            self.model = None
+    
+    def extract_from_utility_bill(
+        self,
+        file_data: bytes,
+        mime_type: str,
+        document_type: str = 'utility_bill'
+    ) -> Dict[str, Any]:
+        """
+        Extract structured data from utility bills (electricity, gas, water)
+        
+        Args:
+            file_data: Binary file content (PDF or image)
+            mime_type: MIME type (application/pdf, image/jpeg, image/png)
+            document_type: Specific type (utility_bill)
+        
+        Returns:
+            {
+                'success': bool,
+                'extracted_data': {
+                    'billing_period_start': 'YYYY-MM-DD',
+                    'billing_period_end': 'YYYY-MM-DD',
+                    'utility_type': 'electricity' | 'gas' | 'water',
+                    'kwh_consumed': float,
+                    'cubic_meters_gas': float,
+                    'liters_water': float,
+                    'total_cost': float,
+                    'currency': 'USD',
+                    'account_number': str,
+                    'supplier_name': str,
+                    'meter_reading_start': float,
+                    'meter_reading_end': float
+                },
+                'confidence_score': float,  # 0-100
+                'processing_time_ms': int,
+                'fields': [  # Field-level details with bounding boxes
+                    {
+                        'field_name': str,
+                        'field_value': str,
+                        'confidence': float,
+                        'bounding_box': {'x': int, 'y': int, 'width': int, 'height': int},
+                        'page_number': int
+                    }
+                ]
+            }
+        """
+        import time
+        start_time = time.time()
+        
+        prompt = """
+You are an expert at reading utility bills (electricity, gas, water).
+Extract ALL relevant data from this utility bill image/PDF.
+
+Required fields to extract:
+- billing_period_start (format: YYYY-MM-DD)
+- billing_period_end (format: YYYY-MM-DD)
+- utility_type (electricity, gas, or water)
+- kwh_consumed (for electricity, as float)
+- cubic_meters_gas (for gas, as float)
+- liters_water (for water, as float)
+- total_cost (as float)
+- currency (e.g., USD, EUR, GBP)
+- account_number (string)
+- supplier_name (string)
+- meter_reading_start (float if available)
+- meter_reading_end (float if available)
+
+Return ONLY valid JSON in this exact format:
+{
+    "utility_type": "electricity",
+    "billing_period_start": "2024-01-01",
+    "billing_period_end": "2024-01-31",
+    "kwh_consumed": 450.5,
+    "total_cost": 125.30,
+    "currency": "USD",
+    "account_number": "123456789",
+    "supplier_name": "City Electric Co",
+    "meter_reading_start": 12345.0,
+    "meter_reading_end": 12795.5,
+    "confidence": 85.5
+}
+
+If a field is not found, use null.
+Include a "confidence" score (0-100) based on image quality and clarity.
+"""
+        
+        try:
+            if not self.model:
+                # Return mock data for testing
+                logger.warning("Using mock extraction data - Gemini Vision not configured")
+                return {
+                    'success': True,
+                    'extracted_data': {
+                        'utility_type': 'electricity',
+                        'billing_period_start': '2024-12-01',
+                        'billing_period_end': '2024-12-31',
+                        'kwh_consumed': 450.5,
+                        'total_cost': 125.30,
+                        'currency': 'USD',
+                        'account_number': 'MOCK-12345',
+                        'supplier_name': 'Mock Electric Co',
+                        'meter_reading_start': 10000.0,
+                        'meter_reading_end': 10450.5
+                    },
+                    'confidence_score': 75.0,
+                    'processing_time_ms': 100,
+                    'fields': []
+                }
+            
+            # Prepare file for Gemini Vision API
+            import PIL.Image
+            import io
+            
+            if mime_type == 'application/pdf':
+                # Convert PDF to images using PyMuPDF (fitz)
+                try:
+                    import fitz  # PyMuPDF
+                    
+                    # Open PDF from bytes
+                    pdf_document = fitz.open(stream=file_data, filetype="pdf")
+                    
+                    # Get first page (utility bills are usually single page or first page has key info)
+                    page = pdf_document[0]
+                    
+                    # Render page to image (300 DPI for good quality)
+                    zoom = 300 / 72  # 72 DPI is default, we want 300 DPI
+                    mat = fitz.Matrix(zoom, zoom)
+                    pix = page.get_pixmap(matrix=mat)
+                    
+                    # Convert to PIL Image
+                    img_data = pix.tobytes("png")
+                    image = PIL.Image.open(io.BytesIO(img_data))
+                    
+                    pdf_document.close()
+                    logger.info(f"Converted PDF to image for extraction (page 1 of {len(pdf_document)})")
+                    
+                except ImportError:
+                    logger.warning("PyMuPDF not installed - returning mock data for PDF")
+                    return self.extract_from_utility_bill(b'', 'image/jpeg', document_type)
+                except Exception as e:
+                    logger.error(f"PDF conversion failed: {str(e)}")
+                    return {
+                        'success': False,
+                        'extracted_data': {},
+                        'confidence_score': 0.0,
+                        'processing_time_ms': int((time.time() - start_time) * 1000),
+                        'error': f'PDF conversion failed: {str(e)}',
+                        'fields': []
+                    }
+            else:
+                # Handle images
+                image = PIL.Image.open(io.BytesIO(file_data))
+            
+            # Call Gemini Vision API
+            response = self.model.generate_content([prompt, image])
+            response_text = response.text.strip()
+            
+            # Parse JSON response
+            import re
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                extracted_data = json.loads(json_match.group())
+            else:
+                extracted_data = json.loads(response_text)
+            
+            # Calculate processing time
+            processing_time = int((time.time() - start_time) * 1000)
+            
+            # Extract confidence score
+            confidence_score = extracted_data.pop('confidence', 80.0)
+            
+            logger.info(
+                f"Extracted utility bill data: {extracted_data.get('utility_type')} "
+                f"({extracted_data.get('kwh_consumed', 0)} kWh) with {confidence_score}% confidence"
+            )
+            
+            return {
+                'success': True,
+                'extracted_data': extracted_data,
+                'confidence_score': float(confidence_score),
+                'processing_time_ms': processing_time,
+                'fields': []  # TODO: Implement field-level extraction with bounding boxes
+            }
+            
+        except Exception as e:
+            logger.error(f"Utility bill extraction failed: {str(e)}", exc_info=True)
+            processing_time = int((time.time() - start_time) * 1000)
+            return {
+                'success': False,
+                'extracted_data': {},
+                'confidence_score': 0.0,
+                'processing_time_ms': processing_time,
+                'error': str(e),
+                'fields': []
+            }
+    
+    def read_meter_photo(
+        self,
+        image_data: bytes,
+        meter_type: str = 'electricity'
+    ) -> Dict[str, Any]:
+        """
+        Extract meter readings from photos
+        
+        Args:
+            image_data: Binary image content
+            meter_type: Type of meter (electricity, gas, water)
+        
+        Returns:
+            {
+                'success': bool,
+                'meter_reading': float,
+                'meter_type': str,
+                'reading_date': 'YYYY-MM-DD',
+                'confidence_score': float,
+                'unit': 'kWh' | 'cubic_meters' | 'liters'
+            }
+        """
+        import time
+        start_time = time.time()
+        
+        prompt = f"""
+You are an expert at reading utility meters from photos.
+This is a {meter_type} meter. Read the current meter value displayed.
+
+Return ONLY valid JSON in this exact format:
+{{
+    "meter_reading": 12345.67,
+    "meter_type": "{meter_type}",
+    "unit": "kWh",
+    "confidence": 90.0,
+    "notes": "Clear digital display"
+}}
+
+If the meter reading is unclear, provide your best estimate and lower the confidence score.
+"""
+        
+        try:
+            if not self.model:
+                logger.warning("Using mock meter reading - Gemini Vision not configured")
+                return {
+                    'success': True,
+                    'meter_reading': 10450.5,
+                    'meter_type': meter_type,
+                    'unit': 'kWh' if meter_type == 'electricity' else 'cubic_meters',
+                    'confidence_score': 80.0,
+                    'processing_time_ms': 50
+                }
+            
+            # Load image
+            import PIL.Image
+            import io
+            image = PIL.Image.open(io.BytesIO(image_data))
+            
+            # Call Gemini Vision
+            response = self.model.generate_content([prompt, image])
+            response_text = response.text.strip()
+            
+            # Parse response
+            import re
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                result = json.loads(json_match.group())
+            else:
+                result = json.loads(response_text)
+            
+            processing_time = int((time.time() - start_time) * 1000)
+            confidence = result.pop('confidence', 85.0)
+            
+            return {
+                'success': True,
+                **result,
+                'confidence_score': float(confidence),
+                'processing_time_ms': processing_time
+            }
+            
+        except Exception as e:
+            logger.error(f"Meter photo reading failed: {str(e)}", exc_info=True)
+            processing_time = int((time.time() - start_time) * 1000)
+            return {
+                'success': False,
+                'meter_reading': 0.0,
+                'meter_type': meter_type,
+                'confidence_score': 0.0,
+                'processing_time_ms': processing_time,
+                'error': str(e)
+            }
+    
+    def extract_from_fuel_receipt(
+        self,
+        file_data: bytes,
+        mime_type: str
+    ) -> Dict[str, Any]:
+        """
+        Extract fuel purchase data from receipts
+        
+        Args:
+            file_data: Binary file content
+            mime_type: MIME type
+        
+        Returns:
+            {
+                'success': bool,
+                'extracted_data': {
+                    'date': 'YYYY-MM-DD',
+                    'fuel_type': 'gasoline' | 'diesel' | 'electric',
+                    'quantity': float,
+                    'quantity_unit': 'liters' | 'gallons' | 'kWh',
+                    'total_cost': float,
+                    'currency': str,
+                    'station_name': str,
+                    'location': str
+                },
+                'confidence_score': float
+            }
+        """
+        import time
+        start_time = time.time()
+        
+        prompt = """
+You are an expert at reading fuel receipts.
+Extract ALL relevant data from this fuel/charging receipt.
+
+Required fields:
+- date (YYYY-MM-DD)
+- fuel_type (gasoline, diesel, electric, etc.)
+- quantity (as float)
+- quantity_unit (liters, gallons, kWh, etc.)
+- total_cost (as float)
+- currency (USD, EUR, GBP, etc.)
+- station_name (string)
+- location (city/address if available)
+
+Return ONLY valid JSON:
+{
+    "date": "2024-12-15",
+    "fuel_type": "gasoline",
+    "quantity": 45.2,
+    "quantity_unit": "liters",
+    "total_cost": 67.80,
+    "currency": "USD",
+    "station_name": "Shell Station",
+    "location": "123 Main St",
+    "confidence": 88.0
+}
+"""
+        
+        try:
+            if not self.model:
+                logger.warning("Using mock fuel receipt data - Gemini Vision not configured")
+                return {
+                    'success': True,
+                    'extracted_data': {
+                        'date': '2024-12-15',
+                        'fuel_type': 'gasoline',
+                        'quantity': 45.2,
+                        'quantity_unit': 'liters',
+                        'total_cost': 67.80,
+                        'currency': 'USD',
+                        'station_name': 'Mock Gas Station',
+                        'location': 'Mock City'
+                    },
+                    'confidence_score': 75.0,
+                    'processing_time_ms': 80
+                }
+            
+            # Load image
+            import PIL.Image
+            import io
+            
+            if mime_type == 'application/pdf':
+                logger.warning("PDF fuel receipt extraction not fully implemented")
+                return self.extract_from_fuel_receipt(b'', 'image/jpeg')
+            
+            image = PIL.Image.open(io.BytesIO(file_data))
+            
+            # Call Gemini Vision
+            response = self.model.generate_content([prompt, image])
+            response_text = response.text.strip()
+            
+            # Parse response
+            import re
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                extracted_data = json.loads(json_match.group())
+            else:
+                extracted_data = json.loads(response_text)
+            
+            processing_time = int((time.time() - start_time) * 1000)
+            confidence = extracted_data.pop('confidence', 82.0)
+            
+            logger.info(
+                f"Extracted fuel receipt: {extracted_data.get('fuel_type')} "
+                f"({extracted_data.get('quantity')} {extracted_data.get('quantity_unit')})"
+            )
+            
+            return {
+                'success': True,
+                'extracted_data': extracted_data,
+                'confidence_score': float(confidence),
+                'processing_time_ms': processing_time
+            }
+            
+        except Exception as e:
+            logger.error(f"Fuel receipt extraction failed: {str(e)}", exc_info=True)
+            processing_time = int((time.time() - start_time) * 1000)
+            return {
+                'success': False,
+                'extracted_data': {},
+                'confidence_score': 0.0,
+                'processing_time_ms': processing_time,
+                'error': str(e)
+            }

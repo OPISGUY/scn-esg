@@ -12,6 +12,8 @@ import EnhancedCarbonOffsets from './components/EnhancedCarbonOffsets';
 import Reports from './components/Reports';
 import AIInsights from './components/AIInsights';
 import ConversationalDataEntry from './components/ConversationalDataEntry';
+import DocumentUploadDemo from './components/DocumentUploadDemo';
+import PredictiveAnalyticsDemo from './components/PredictiveAnalyticsDemo';
 import CSRDCompliance from './components/CSRDCompliance';
 import { FootprintHistory } from './components/FootprintHistory';
 import ImportData from './components/ImportData';
@@ -68,6 +70,10 @@ function AppContent() {
         return <FootprintHistory />;
       case 'conversational':
         return <ConversationalDataEntry />;
+      case 'document-upload-demo':
+        return <DocumentUploadDemo />;
+      case 'predictive-analytics-demo':
+        return <PredictiveAnalyticsDemo />;
       case 'ewaste':
         return <EwasteTracker />;
       case 'impact':
