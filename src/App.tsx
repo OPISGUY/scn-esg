@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { HelpProvider } from './contexts/HelpContext';
 import AuthLayout from './components/auth/AuthLayout';
@@ -20,10 +20,33 @@ import ImportData from './components/ImportData';
 import UserDashboard from './components/UserDashboard';
 import HelpButton from './components/HelpButton';
 import { HelpTooltipPortal } from './components/HelpTooltip';
+import { mockCarbonFootprint } from './data/mockData';
+
+// Initialize demo data ONLY for demo user or when no auth
+const initializeDemoData = (userEmail?: string) => {
+  // Only seed demo data if:
+  // 1. User is the demo account, OR
+  // 2. No user is logged in (browsing without auth)
+  const isDemoUser = userEmail === 'demo@scn.com';
+  const isUnauthenticated = !userEmail;
+  
+  if (isDemoUser || isUnauthenticated) {
+    const existingFootprint = localStorage.getItem('carbonFootprint');
+    if (!existingFootprint) {
+      console.log('📊 Initializing demo carbon footprint data for:', userEmail || 'unauthenticated user');
+      localStorage.setItem('carbonFootprint', JSON.stringify(mockCarbonFootprint));
+    }
+  }
+};
 
 function AppContent() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
+
+  // Initialize demo data only for demo user or unauthenticated browsing
+  useEffect(() => {
+    initializeDemoData(user?.email);
+  }, [user?.email]);
 
   // Debug logging
   console.log('🔍 APP DEBUG - User state:', {

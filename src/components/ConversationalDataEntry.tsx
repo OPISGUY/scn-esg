@@ -129,10 +129,11 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
       try {
         // Get user's most recent footprint or create new one
         const footprints = await carbonService.getFootprints();
+        const footprintsArray = Array.isArray(footprints) ? footprints : [];
         
-        if (footprints && footprints.length > 0) {
+        if (footprintsArray.length > 0) {
           // Use most recent
-          const latest = footprints[0];
+          const latest = footprintsArray[0];
           if (latest.id) {
             setCurrentFootprintId(latest.id);
             // Safe number conversion with fallback to 0
@@ -144,7 +145,25 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
             });
           }
         } else {
-          // Create a new draft footprint
+          // Try localStorage fallback before creating new
+          const savedFootprint = localStorage.getItem('carbonFootprint');
+          if (savedFootprint) {
+            try {
+              const parsed = JSON.parse(savedFootprint);
+              setCurrentFootprintId(parsed.id || 'local-1');
+              setCurrentFootprint({
+                scope1_emissions: Number(parsed.scope1 || parsed.scope1_emissions) || 0,
+                scope2_emissions: Number(parsed.scope2 || parsed.scope2_emissions) || 0,
+                scope3_emissions: Number(parsed.scope3 || parsed.scope3_emissions) || 0,
+                total_emissions: Number(parsed.total || parsed.total_emissions) || 0,
+              });
+              return;
+            } catch (parseError) {
+              console.error('Error parsing localStorage footprint:', parseError);
+            }
+          }
+          
+          // Create a new draft footprint if no localStorage data
           const newFootprint = await carbonService.createFootprint({
             reporting_period: new Date().getFullYear().toString(),
             scope1_emissions: 0,
@@ -164,15 +183,42 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
         }
       } catch (error) {
         console.error('Failed to load footprint:', error);
-        // Still allow usage with a default footprint
-        setCurrentFootprintId('temp-' + Date.now());
-        setCurrentFootprint({
-          scope1_emissions: 0,
-          scope2_emissions: 0,
-          scope3_emissions: 0,
-          total_emissions: 0,
-        });
-        setError('Using temporary footprint. Data will be saved when you log in.');
+        // Try localStorage fallback on error
+        const savedFootprint = localStorage.getItem('carbonFootprint');
+        if (savedFootprint) {
+          try {
+            const parsed = JSON.parse(savedFootprint);
+            setCurrentFootprintId(parsed.id || 'local-1');
+            setCurrentFootprint({
+              scope1_emissions: Number(parsed.scope1 || parsed.scope1_emissions) || 0,
+              scope2_emissions: Number(parsed.scope2 || parsed.scope2_emissions) || 0,
+              scope3_emissions: Number(parsed.scope3 || parsed.scope3_emissions) || 0,
+              total_emissions: Number(parsed.total || parsed.total_emissions) || 0,
+            });
+            setError('Using local data. Changes will sync when connected.');
+          } catch (parseError) {
+            console.error('Error parsing localStorage footprint:', parseError);
+            // Still allow usage with a default footprint
+            setCurrentFootprintId('temp-' + Date.now());
+            setCurrentFootprint({
+              scope1_emissions: 0,
+              scope2_emissions: 0,
+              scope3_emissions: 0,
+              total_emissions: 0,
+            });
+            setError('Using temporary footprint. Data will be saved when you log in.');
+          }
+        } else {
+          // No localStorage, use temp
+          setCurrentFootprintId('temp-' + Date.now());
+          setCurrentFootprint({
+            scope1_emissions: 0,
+            scope2_emissions: 0,
+            scope3_emissions: 0,
+            total_emissions: 0,
+          });
+          setError('Using temporary footprint. Data will be saved when you log in.');
+        }
       }
     };
 

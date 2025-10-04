@@ -25,9 +25,68 @@ export const FootprintHistory: React.FC<FootprintHistoryProps> = ({ onEditFootpr
       setLoading(true);
       setError(null);
       const data = await carbonService.getFootprints();
-      setFootprints(data);
+      const footprintsArray = Array.isArray(data) ? data : [];
+      
+      // If API returns empty, try localStorage fallback for demo mode
+      if (footprintsArray.length === 0) {
+        const savedFootprint = localStorage.getItem('carbonFootprint');
+        if (savedFootprint) {
+          try {
+            const parsed = JSON.parse(savedFootprint);
+            // Convert to API format if needed
+            const localFootprint = {
+              id: parsed.id || '1',
+              reporting_period: parsed.reportingPeriod || parsed.reporting_period || '2024',
+              scope1_emissions: parsed.scope1 || parsed.scope1_emissions || 0,
+              scope2_emissions: parsed.scope2 || parsed.scope2_emissions || 0,
+              scope3_emissions: parsed.scope3 || parsed.scope3_emissions || 0,
+              total_emissions: parsed.total || parsed.total_emissions || 0,
+              company_data: {
+                id: 1,
+                name: parsed.companyName || 'Demo Company'
+              },
+              status: parsed.status || 'draft' as const,
+              created_at: parsed.createdAt || new Date().toISOString()
+            };
+            setFootprints([localFootprint]);
+            setLoading(false);
+            return;
+          } catch (parseError) {
+            console.error('Error parsing localStorage footprint:', parseError);
+          }
+        }
+      }
+      
+      setFootprints(footprintsArray);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load footprints');
+      console.error('Failed to load footprints:', err);
+      // Try localStorage fallback on error
+      const savedFootprint = localStorage.getItem('carbonFootprint');
+      if (savedFootprint) {
+        try {
+          const parsed = JSON.parse(savedFootprint);
+          const localFootprint = {
+            id: parsed.id || '1',
+            reporting_period: parsed.reportingPeriod || parsed.reporting_period || '2024',
+            scope1_emissions: parsed.scope1 || parsed.scope1_emissions || 0,
+            scope2_emissions: parsed.scope2 || parsed.scope2_emissions || 0,
+            scope3_emissions: parsed.scope3 || parsed.scope3_emissions || 0,
+            total_emissions: parsed.total || parsed.total_emissions || 0,
+            company_data: {
+              id: 1,
+              name: parsed.companyName || 'Demo Company'
+            },
+            status: parsed.status || 'draft' as const,
+            created_at: parsed.createdAt || new Date().toISOString()
+          };
+          setFootprints([localFootprint]);
+        } catch (parseError) {
+          console.error('Error parsing localStorage footprint:', parseError);
+          setError(err instanceof Error ? err.message : 'Failed to load footprints');
+        }
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to load footprints');
+      }
     } finally {
       setLoading(false);
     }
