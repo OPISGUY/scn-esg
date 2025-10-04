@@ -101,10 +101,17 @@ const AIInsights: React.FC = () => {
       // Get the latest footprint for the user (in a real app, this would come from props or state)
       // For now, we'll try to call the API and it will use company data
       const result = await callAIService('validate', {});
-      setValidationResult(result);
+      if (result && typeof result === 'object') {
+        setValidationResult(result);
+      } else {
+        throw new Error('Invalid response from AI service');
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to validate data. Please ensure you have carbon footprint data.');
+      const errorMessage = err.message || 'Failed to validate data. Please ensure you have carbon footprint data.';
+      setError(errorMessage);
       console.error('Validation error:', err);
+      // Don't crash - just show the error
+      setValidationResult(null);
     } finally {
       setLoading(prev => ({ ...prev, validation: false }));
     }
@@ -116,10 +123,17 @@ const AIInsights: React.FC = () => {
     
     try {
       const result = await callAIService('benchmark');
-      setBenchmarkResult(result);
+      if (result && typeof result === 'object') {
+        setBenchmarkResult(result);
+      } else {
+        throw new Error('Invalid response from AI service');
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to get benchmark data. Please ensure your company has emission data.');
+      const errorMessage = err.message || 'Failed to get benchmark data. Please ensure your company has emission data.';
+      setError(errorMessage);
       console.error('Benchmark error:', err);
+      // Don't crash - just show the error
+      setBenchmarkResult(null);
     } finally {
       setLoading(prev => ({ ...prev, benchmark: false }));
     }

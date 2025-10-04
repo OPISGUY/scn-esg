@@ -241,17 +241,17 @@ export const FootprintHistory: React.FC<FootprintHistoryProps> = ({ onEditFootpr
                     <div className="text-sm font-medium text-gray-900">{footprint.reporting_period}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{footprint.scope1_emissions.toFixed(2)}</div>
+                    <div className="text-sm text-gray-900">{(Number(footprint.scope1_emissions) || 0).toFixed(2)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{footprint.scope2_emissions.toFixed(2)}</div>
+                    <div className="text-sm text-gray-900">{(Number(footprint.scope2_emissions) || 0).toFixed(2)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{footprint.scope3_emissions.toFixed(2)}</div>
+                    <div className="text-sm text-gray-900">{(Number(footprint.scope3_emissions) || 0).toFixed(2)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-semibold text-gray-900">
-                      {(footprint.total_emissions || 0).toFixed(2)}
+                      {(Number(footprint.total_emissions) || 0).toFixed(2)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

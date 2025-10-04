@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calculator, Zap, Car, Building, Save, ArrowRight, Upload, AlertCircle, CheckCircle } from 'lucide-react';
 import { calculateCO2FromElectricity, calculateCO2FromFuel, calculateScope3Simplified } from '../utils/calculations';
 import { carbonService } from '../services/carbonService';
@@ -54,6 +54,58 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
     gas: null as File | null,
     fuel: null as File | null
   });
+
+  // Load existing footprint data on component mount
+  useEffect(() => {
+    const loadExistingData = async () => {
+      if (!user) {
+        return;
+      }
+
+      try {
+        // Try to get the most recent footprint
+        const footprints = await carbonService.getFootprints();
+        
+        if (footprints && footprints.length > 0) {
+          const latest = footprints[0];
+          
+          // Pre-populate company info
+          setFormData(prev => ({
+            ...prev,
+            companyName: user.company || '',
+            reportingPeriod: latest.reporting_period || new Date().getFullYear().toString(),
+          }));
+
+          // If there's data, calculate and show results
+          if (latest.scope1_emissions || latest.scope2_emissions || latest.scope3_emissions) {
+            setResults({
+              scope1: Number(latest.scope1_emissions) || 0,
+              scope2: Number(latest.scope2_emissions) || 0,
+              scope3: Number(latest.scope3_emissions) || 0,
+              total: Number(latest.total_emissions) || 0,
+            });
+          }
+        } else {
+          // No existing footprints, just pre-fill company name
+          setFormData(prev => ({
+            ...prev,
+            companyName: user.company || '',
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to load existing footprint:', error);
+        // Still pre-fill what we can
+        setFormData(prev => ({
+          ...prev,
+          companyName: user.company || '',
+        }));
+      } finally {
+        // Data loading complete
+      }
+    };
+
+    loadExistingData();
+  }, [user]);
 
   const handleFileUpload = (type: 'electricity' | 'gas' | 'fuel', event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

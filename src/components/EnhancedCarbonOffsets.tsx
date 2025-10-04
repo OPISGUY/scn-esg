@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShoppingCart, 
-  Leaf, 
   Calculator, 
-  Zap, 
   Check, 
-  ArrowRight, 
-  Heart, 
-  Target, 
   AlertCircle, 
-  HelpCircle,
-  TrendingUp,
   Star,
   Clock,
-  Shield,
-  Award
+  Shield
 } from 'lucide-react';
 import { calculateCarbonBalance } from '../data/mockData';
 import { 
@@ -28,9 +20,7 @@ import { CarbonOffset, OffsetRecommendation } from '../types';
 
 const CarbonOffsets: React.FC = () => {
   const [cart, setCart] = useState<{ [key: string]: number }>({});
-  const [showCheckout, setShowCheckout] = useState(false);
   const [carbonBalance, setCarbonBalance] = useState(calculateCarbonBalance());
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'auto' | 'browse' | 'sequoia'>('auto');
   const [customTonnes, setCustomTonnes] = useState('');
   const [recommendations, setRecommendations] = useState<OffsetRecommendation[]>([]);
@@ -43,9 +33,13 @@ const CarbonOffsets: React.FC = () => {
 
   // Auto-calculate recommendations for remaining emissions
   useEffect(() => {
-    const emissions = carbonBalance.netEmissions;
-    if (emissions > 0) {
+    const emissions = carbonBalance.netEmissions || 0;
+    // Only show recommendations if we have positive, finite emissions
+    if (emissions > 0 && isFinite(emissions)) {
       setRecommendations(calculateOffsetRecommendations(emissions));
+    } else {
+      // Default recommendation for 0 or invalid emissions
+      setRecommendations([]);
     }
   }, [carbonBalance]);
 
@@ -140,7 +134,6 @@ const CarbonOffsets: React.FC = () => {
 
     // Reset cart and show success
     setCart({});
-    setShowCheckout(false);
     alert(`Successfully purchased ${getTotalCO2Offset()} tonnes of carbon offsets for £${getTotalPrice().toLocaleString()}!`);
   };
 

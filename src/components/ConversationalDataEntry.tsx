@@ -135,11 +135,12 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
           const latest = footprints[0];
           if (latest.id) {
             setCurrentFootprintId(latest.id);
+            // Safe number conversion with fallback to 0
             setCurrentFootprint({
-              scope1_emissions: Number(latest.scope1_emissions),
-              scope2_emissions: Number(latest.scope2_emissions),
-              scope3_emissions: Number(latest.scope3_emissions),
-              total_emissions: Number(latest.total_emissions),
+              scope1_emissions: Number(latest.scope1_emissions) || 0,
+              scope2_emissions: Number(latest.scope2_emissions) || 0,
+              scope3_emissions: Number(latest.scope3_emissions) || 0,
+              total_emissions: Number(latest.total_emissions) || 0,
             });
           }
         } else {
@@ -163,7 +164,15 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
         }
       } catch (error) {
         console.error('Failed to load footprint:', error);
-        setError('Failed to load carbon footprint. Please refresh the page.');
+        // Still allow usage with a default footprint
+        setCurrentFootprintId('temp-' + Date.now());
+        setCurrentFootprint({
+          scope1_emissions: 0,
+          scope2_emissions: 0,
+          scope3_emissions: 0,
+          total_emissions: 0,
+        });
+        setError('Using temporary footprint. Data will be saved when you log in.');
       }
     };
 

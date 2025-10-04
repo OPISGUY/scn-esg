@@ -131,7 +131,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
           </div>
           <h3 className="text-gray-600 text-sm font-medium mb-1">Latest Emissions</h3>
           <p className="text-2xl font-bold text-gray-900">
-            {latestFootprint?.total_emissions?.toFixed(2) || '0.00'} <span className="text-lg text-gray-500">tCO₂e</span>
+            {(Number(latestFootprint?.total_emissions) || 0).toFixed(2)} <span className="text-lg text-gray-500">tCO₂e</span>
           </p>
           <p className="text-xs text-gray-500 mt-2">{latestFootprint?.reporting_period || 'N/A'}</p>
         </div>
@@ -144,7 +144,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
           </div>
           <h3 className="text-gray-600 text-sm font-medium mb-1">Average Emissions</h3>
           <p className="text-2xl font-bold text-gray-900">
-            {avgEmissions.toFixed(2)} <span className="text-lg text-gray-500">tCO₂e</span>
+            {(Number(avgEmissions) || 0).toFixed(2)} <span className="text-lg text-gray-500">tCO₂e</span>
           </p>
           <p className="text-xs text-gray-500 mt-2">Across {footprintsArray.length} periods</p>
         </div>
@@ -181,7 +181,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-600">Scope 1 (Direct)</span>
                 <span className="text-sm text-gray-500">
-                  {((latestFootprint.scope1_emissions / latestFootprint.total_emissions!) * 100).toFixed(0)}%
+                  {latestFootprint.total_emissions && latestFootprint.total_emissions > 0 ? ((latestFootprint.scope1_emissions / latestFootprint.total_emissions) * 100).toFixed(0) : 0}%
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
@@ -190,14 +190,14 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
                   style={{ width: `${(latestFootprint.scope1_emissions / latestFootprint.total_emissions!) * 100}%` }}
                 />
               </div>
-              <p className="text-2xl font-bold text-gray-900">{latestFootprint.scope1_emissions.toFixed(2)} tCO₂e</p>
+              <p className="text-2xl font-bold text-gray-900">{(Number(latestFootprint.scope1_emissions) || 0).toFixed(2)} tCO₂e</p>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-600">Scope 2 (Electricity)</span>
                 <span className="text-sm text-gray-500">
-                  {((latestFootprint.scope2_emissions / latestFootprint.total_emissions!) * 100).toFixed(0)}%
+                  {latestFootprint.total_emissions && latestFootprint.total_emissions > 0 ? ((latestFootprint.scope2_emissions / latestFootprint.total_emissions) * 100).toFixed(0) : 0}%
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
@@ -206,14 +206,14 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
                   style={{ width: `${(latestFootprint.scope2_emissions / latestFootprint.total_emissions!) * 100}%` }}
                 />
               </div>
-              <p className="text-2xl font-bold text-gray-900">{latestFootprint.scope2_emissions.toFixed(2)} tCO₂e</p>
+              <p className="text-2xl font-bold text-gray-900">{(Number(latestFootprint.scope2_emissions) || 0).toFixed(2)} tCO₂e</p>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-600">Scope 3 (Indirect)</span>
                 <span className="text-sm text-gray-500">
-                  {((latestFootprint.scope3_emissions / latestFootprint.total_emissions!) * 100).toFixed(0)}%
+                  {latestFootprint.total_emissions && latestFootprint.total_emissions > 0 ? ((latestFootprint.scope3_emissions / latestFootprint.total_emissions) * 100).toFixed(0) : 0}%
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
@@ -222,7 +222,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onViewChange }) => {
                   style={{ width: `${(latestFootprint.scope3_emissions / latestFootprint.total_emissions!) * 100}%` }}
                 />
               </div>
-              <p className="text-2xl font-bold text-gray-900">{latestFootprint.scope3_emissions.toFixed(2)} tCO₂e</p>
+              <p className="text-2xl font-bold text-gray-900">{(Number(latestFootprint.scope3_emissions) || 0).toFixed(2)} tCO₂e</p>
             </div>
           </div>
         </div>

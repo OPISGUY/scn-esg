@@ -1,30 +1,31 @@
 // Carbon Offset Marketplace Data - Market Competitive Pricing & Sequoia Tonnes
+import { CarbonOffset } from '../types';
 
 // Current market rates (January 2025)
 export const MARKET_RATES = {
   VOLUNTARY_CREDITS: {
-    min: 12,
-    max: 45,
-    average: 28
+    min: 7.50,
+    max: 22,
+    average: 15
   },
   COMPLIANCE_CREDITS: {
-    min: 35,
-    max: 85,
-    average: 62
+    min: 27,
+    max: 104,
+    average: 50
   },
   SEQUOIA_TONNES: {
-    base: 2550, // Base price for 25-year sequestration
+    base: 27, // Base price for 25-year sequestration
     multiplier: 1.4 // Price multiplier for each extended period
   }
 };
 
 // Sequoia Tonnes with different sequestration periods
-export const SEQUOIA_TONNES = [
+export const SEQUOIA_TONNES: CarbonOffset[] = [
   {
     id: 'seq-25',
     name: 'Sequoia Tonnes - 25 Year Guarantee',
     type: 'Direct Air Capture',
-    price: 2550,
+    price: 27,
     co2Offset: 1,
     sequestrationPeriod: 25,
     description: 'Premium direct air capture with 25-year geological storage guarantee. Verified by leading carbon standards with real-time monitoring.',
@@ -39,7 +40,7 @@ export const SEQUOIA_TONNES = [
     id: 'seq-50',
     name: 'Sequoia Tonnes - 50 Year Guarantee',
     type: 'Enhanced Direct Air Capture',
-    price: 3570, // 2550 * 1.4
+    price: 38, // 27 * 1.4
     co2Offset: 1,
     sequestrationPeriod: 50,
     description: 'Enhanced direct air capture with 50-year geological storage in deep saline aquifers. Double verification and insurance coverage.',
@@ -54,7 +55,7 @@ export const SEQUOIA_TONNES = [
     id: 'seq-100',
     name: 'Sequoia Tonnes - 100 Year Guarantee',
     type: 'Permanent Direct Air Capture',
-    price: 4998, // 2550 * 1.4^2
+    price: 53, // 27 * 1.4^2
     co2Offset: 1,
     sequestrationPeriod: 100,
     description: 'Ultra-permanent direct air capture with 100-year storage guarantee. Maximum permanence with multi-site geological injection.',
@@ -69,7 +70,7 @@ export const SEQUOIA_TONNES = [
     id: 'seq-500',
     name: 'Sequoia Tonnes - 500 Year Guarantee',
     type: 'Millennial Direct Air Capture',
-    price: 9796, // 2550 * 1.4^3
+    price: 74, // 27 * 1.4^3
     co2Offset: 1,
     sequestrationPeriod: 500,
     description: 'Millennial-scale permanent storage with 500-year guarantee. Ultimate climate commitment with advanced mineralization technology.',
@@ -84,7 +85,7 @@ export const SEQUOIA_TONNES = [
     id: 'seq-1000',
     name: 'Sequoia Tonnes - 1000 Year Guarantee',
     type: 'Eternal Direct Air Capture',
-    price: 19214, // 2550 * 1.4^4
+    price: 104, // 27 * 1.4^4
     co2Offset: 1,
     sequestrationPeriod: 1000,
     description: 'The ultimate climate solution with 1000-year permanent storage guarantee. Revolutionary technology ensuring carbon removal for generations.',
@@ -98,12 +99,12 @@ export const SEQUOIA_TONNES = [
 ];
 
 // Market-competitive voluntary carbon credits
-export const CARBON_CREDITS = [
+export const CARBON_CREDITS: CarbonOffset[] = [
   {
     id: 'cc-reuse',
     name: 'Technology Reuse Credits',
     type: 'Circular Economy',
-    price: 25,
+    price: 18,
     co2Offset: 1,
     description: 'Verified carbon credits from our certified e-waste recycling and device refurbishment programs. Avoiding landfill emissions while creating social value.',
     features: ['Immediate impact', 'Social co-benefits', 'Local community support', 'Transparent tracking'],
@@ -116,7 +117,7 @@ export const CARBON_CREDITS = [
     id: 'cc-renewable',
     name: 'Renewable Energy Credits',
     type: 'Clean Energy',
-    price: 18,
+    price: 7.50,
     co2Offset: 1,
     description: 'Support renewable energy projects while offsetting your carbon footprint. Wind and solar projects in developing countries.',
     features: ['Clean energy support', 'Developing country projects', 'UN SDG alignment', 'Additional benefits'],
@@ -129,7 +130,7 @@ export const CARBON_CREDITS = [
     id: 'cc-forestry',
     name: 'Forest Conservation Credits',
     type: 'Nature-Based Solutions',
-    price: 22,
+    price: 15,
     co2Offset: 1,
     description: 'Protect endangered forests while capturing carbon. REDD+ projects with biodiversity co-benefits and community engagement.',
     features: ['Forest protection', 'Biodiversity benefits', 'Community engagement', 'Long-term monitoring'],
@@ -142,7 +143,7 @@ export const CARBON_CREDITS = [
     id: 'cc-biochar',
     name: 'Biochar Carbon Removal',
     type: 'Carbon Removal',
-    price: 45,
+    price: 22,
     co2Offset: 1,
     description: 'Permanent carbon removal through biochar production. Agricultural waste converted to long-term carbon storage with soil benefits.',
     features: ['Permanent removal', 'Soil improvement', 'Agricultural benefits', 'Measurable impact'],

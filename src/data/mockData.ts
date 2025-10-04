@@ -110,20 +110,29 @@ export const calculateCarbonBalance = () => {
   const savedOffsets = localStorage.getItem('offsetPurchases');
   const offsetPurchases = savedOffsets ? JSON.parse(savedOffsets) : [];
   
-  // Calculate total purchased offsets
+  // Calculate total purchased offsets with safety check
   const purchasedOffsets = offsetPurchases.reduce((total: number, purchase: any) => {
-    return total + purchase.totalCO2Offset;
+    const offset = Number(purchase.totalCO2Offset) || Number(purchase.totalCO2) || 0;
+    return total + offset;
   }, 0);
   
-  const grossEmissions = footprint.total;
-  const scnOffsets = mockImpactMetrics.carbonCreditsFromDonations + mockImpactMetrics.sequoiaTonnesPurchased + purchasedOffsets;
+  // Safe number conversions with fallbacks
+  const grossEmissions = Number(footprint.total || footprint.total_emissions) || 0;
+  const scnOffsets = (Number(mockImpactMetrics.carbonCreditsFromDonations) || 0) + 
+                     (Number(mockImpactMetrics.sequoiaTonnesPurchased) || 0) + 
+                     purchasedOffsets;
   const netEmissions = Math.max(grossEmissions - scnOffsets, 0);
   
+  // Prevent division by zero and NaN
+  const neutralityPercentage = grossEmissions > 0 
+    ? Math.min((scnOffsets / grossEmissions) * 100, 100) 
+    : 0;
+  
   return {
-    grossEmissions,
-    scnOffsets,
-    netEmissions,
-    neutralityPercentage: Math.min((scnOffsets / grossEmissions) * 100, 100)
+    grossEmissions: grossEmissions || 0,
+    scnOffsets: scnOffsets || 0,
+    netEmissions: netEmissions || 0,
+    neutralityPercentage: isFinite(neutralityPercentage) ? neutralityPercentage : 0
   };
 };
 
