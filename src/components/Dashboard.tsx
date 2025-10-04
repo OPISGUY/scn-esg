@@ -191,6 +191,7 @@ const EmptyStateDashboard: React.FC<{
               title="CSV/Excel Files"
               description="Import emissions and operational data"
               formats="CSV, XLSX, JSON"
+              onClick={() => onViewChange('import-data')}
             />
             
             <ImportOption
@@ -198,6 +199,7 @@ const EmptyStateDashboard: React.FC<{
               title="Energy Systems"
               description="Connect smart meters and IoT devices"
               formats="API, MQTT, REST"
+              onClick={() => alert('Energy systems integration coming soon!')}
             />
             
             <ImportOption
@@ -205,6 +207,7 @@ const EmptyStateDashboard: React.FC<{
               title="ERP Integration"
               description="Sync with existing business systems"
               formats="SAP, Oracle, Custom"
+              onClick={() => alert('ERP integration coming soon!')}
             />
           </div>
         </div>
@@ -330,8 +333,12 @@ const ImportOption: React.FC<{
   title: string;
   description: string;
   formats: string;
-}> = ({ icon, title, description, formats }) => (
-  <button className="group p-6 rounded-2xl bg-white/30 backdrop-blur-md border border-white/50 hover:bg-white/40 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-left">
+  onClick?: () => void;
+}> = ({ icon, title, description, formats, onClick }) => (
+  <button 
+    onClick={onClick}
+    className="group p-6 rounded-2xl bg-white/30 backdrop-blur-md border border-white/50 hover:bg-white/40 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-left"
+  >
     <div className="w-12 h-12 rounded-xl bg-white/40 backdrop-blur-sm flex items-center justify-center mb-4 text-gray-700 group-hover:text-blue-600 transition-colors">
       {icon}
     </div>

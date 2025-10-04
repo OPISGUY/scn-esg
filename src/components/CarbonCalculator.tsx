@@ -49,6 +49,21 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
     fuel: 'manual'
   });
 
+  const [uploadedFiles, setUploadedFiles] = useState({
+    electricity: null as File | null,
+    gas: null as File | null,
+    fuel: null as File | null
+  });
+
+  const handleFileUpload = (type: 'electricity' | 'gas' | 'fuel', event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploadedFiles(prev => ({ ...prev, [type]: file }));
+      // TODO: Parse file and extract data
+      alert(`File "${file.name}" uploaded successfully! (Parsing functionality coming soon)`);
+    }
+  };
+
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
@@ -319,10 +334,16 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
                     </div>
                     {dataSource.electricity === 'upload' && (
                       <div className="mt-3">
-                        <button className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <label className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center space-x-2 cursor-pointer">
                           <Upload className="w-4 h-4" />
-                          <span>Upload Bills</span>
-                        </button>
+                          <span>{uploadedFiles.electricity ? uploadedFiles.electricity.name : 'Upload Bills'}</span>
+                          <input 
+                            type="file" 
+                            accept=".pdf,.jpg,.jpeg,.png,.csv,.xlsx" 
+                            onChange={(e) => handleFileUpload('electricity', e)}
+                            className="hidden"
+                          />
+                        </label>
                       </div>
                     )}
                   </div>
@@ -355,10 +376,16 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
                     </div>
                     {dataSource.gas === 'upload' && (
                       <div className="mt-3">
-                        <button className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <label className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center space-x-2 cursor-pointer">
                           <Upload className="w-4 h-4" />
-                          <span>Upload Bills</span>
-                        </button>
+                          <span>{uploadedFiles.gas ? uploadedFiles.gas.name : 'Upload Bills'}</span>
+                          <input 
+                            type="file" 
+                            accept=".pdf,.jpg,.jpeg,.png,.csv,.xlsx" 
+                            onChange={(e) => handleFileUpload('gas', e)}
+                            className="hidden"
+                          />
+                        </label>
                       </div>
                     )}
                   </div>
@@ -391,10 +418,16 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
                     </div>
                     {dataSource.fuel === 'upload' && (
                       <div className="mt-3">
-                        <button className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center space-x-2">
+                        <label className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center space-x-2 cursor-pointer">
                           <Upload className="w-4 h-4" />
-                          <span>Upload Receipts</span>
-                        </button>
+                          <span>{uploadedFiles.fuel ? uploadedFiles.fuel.name : 'Upload Receipts'}</span>
+                          <input 
+                            type="file" 
+                            accept=".pdf,.jpg,.jpeg,.png,.csv,.xlsx" 
+                            onChange={(e) => handleFileUpload('fuel', e)}
+                            className="hidden"
+                          />
+                        </label>
                       </div>
                     )}
                   </div>

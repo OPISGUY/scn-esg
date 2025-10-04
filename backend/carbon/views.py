@@ -31,6 +31,10 @@ class CarbonFootprintViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         """Set company when creating footprint"""
+        if not self.request.user.company:
+            raise serializers.ValidationError(
+                {'company': 'User must be associated with a company to create carbon footprints'}
+            )
         serializer.save(company=self.request.user.company)
     
     @action(detail=True, methods=['post'])
