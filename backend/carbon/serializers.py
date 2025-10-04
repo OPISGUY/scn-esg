@@ -15,7 +15,7 @@ class CarbonFootprintSerializer(serializers.ModelSerializer):
             'scope1_emissions', 'scope2_emissions', 'scope3_emissions',
             'total_emissions', 'status', 'created_at', 'verified_at'
         ]
-        read_only_fields = ['id', 'total_emissions', 'created_at', 'company_data']
+        read_only_fields = ['id', 'company', 'total_emissions', 'created_at', 'company_data']
 
 
 class CarbonOffsetSerializer(serializers.ModelSerializer):
