@@ -523,3 +523,4 @@ class GuidanceService:
             })
         
         return actions
+# Force Render rebuild - syntax fix
