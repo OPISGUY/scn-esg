@@ -80,7 +80,6 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showDocumentUpload, setShowDocumentUpload] = useState(false);
-  const [uploadingDocument, setUploadingDocument] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognition = useRef<any>(null);
@@ -371,7 +370,6 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
 
   // Handle document upload
   const handleDocumentUploadComplete = async (response: UploadDocumentResponse) => {
-    setUploadingDocument(false);
     setShowDocumentUpload(false);
 
     // Add document message to conversation
@@ -417,8 +415,6 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
   };
 
   const handleDocumentUploadError = (error: string) => {
-    setUploadingDocument(false);
-
     const errorMessage: ConversationalMessage = {
       id: Date.now().toString(),
       role: 'system',

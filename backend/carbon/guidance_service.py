@@ -417,7 +417,7 @@ class GuidanceService:
                 'type': 'quarterly',
                 'priority': 'high',
                 'title': f'Q{quarter} Data Collection',
-                'message': f'Quarter {quarter} is ending. Make sure you've reported all emissions for the quarter.',
+                'message': f'Quarter {quarter} is ending. Make sure you have reported all emissions for the quarter.',
                 'action': 'review_completeness',
             })
         
