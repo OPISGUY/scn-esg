@@ -1,0 +1,39 @@
+Welcome to SCN ESG Platform!
+
+Hi {{ user.first_name|default:"there" }},
+
+Thank you for joining our sustainability revolution. We're excited to help you track, analyze, and reduce your organization's carbon footprint.
+
+VERIFY YOUR EMAIL
+
+Please verify your email address by clicking this link:
+{{ verification_url }}
+
+This link will expire in 24 hours for security reasons.
+
+WHAT YOU CAN DO
+
+Once verified, you'll be able to:
+- Calculate your carbon footprint using GHG Protocol
+- Track Scope 1, 2, and 3 emissions
+- Generate compliance reports (CSRD, ESRS, CDP)
+- Get AI-powered sustainability insights
+- Purchase carbon offsets and achieve net-zero
+
+NEED HELP?
+
+Email: support@scnesg.com
+Documentation: docs.scnesg.com
+
+We're thrilled to have you on board!
+
+Best regards,
+The SCN ESG Team
+
+---
+© {{ current_year }} SCN Limited. All rights reserved.
+
+Privacy Policy: https://scnesg.com/privacy
+Terms of Service: https://scnesg.com/terms
+
+If you didn't create an account, please ignore this email or contact security@scnesg.com

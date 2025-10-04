@@ -83,6 +83,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Email verification middleware (Phase 2)
+    # Uncomment to enforce email verification for all authenticated users
+    # 'users.middleware.EmailVerificationMiddleware',
 ]
 
 ROOT_URLCONF = 'scn_esg_platform.urls'
@@ -244,9 +247,19 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 AUTH_USER_MODEL = 'users.User'
 
 # Email Configuration - Production Ready
+# Development: Use MailHog (Docker container at localhost:1025)
+# Production: Use configured SMTP server
 if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    # MailHog for local development (requires docker-compose.dev.yml)
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'localhost')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', '1025'))  # MailHog SMTP port
+    EMAIL_USE_TLS = False  # MailHog doesn't require TLS
+    EMAIL_USE_SSL = False
+    EMAIL_HOST_USER = ''  # MailHog doesn't require auth
+    EMAIL_HOST_PASSWORD = ''
 else:
+    # Production SMTP (Postfix or relay service)
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = 'smtp.gmail.com'  # or your email provider
     EMAIL_PORT = 587
@@ -256,6 +269,9 @@ else:
 
 DEFAULT_FROM_EMAIL = 'SCN ESG Platform <noreply@scnesg.com>'
 EMAIL_SUBJECT_PREFIX = '[SCN ESG] '
+
+# Frontend URL for email links
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
 # Email verification settings
 EMAIL_VERIFICATION_TIMEOUT = 24 * 60 * 60  # 24 hours

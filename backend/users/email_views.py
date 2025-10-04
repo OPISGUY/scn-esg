@@ -1,5 +1,11 @@
+"""
+Email verification and password reset views
+Updated to use new email service layer and token generator
+"""
+
 import secrets
 import hashlib
+import logging
 from datetime import timedelta
 from django.conf import settings
 from django.core.mail import send_mail
@@ -10,15 +16,27 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 
+# Import our new email service and token utilities
+from utils.email_service import send_verification_email as send_verification_email_service
+from utils.email_service import send_password_reset_email as send_password_reset_email_service
+from utils.email_service import send_welcome_email as send_welcome_email_service
+from utils.tokens import (
+    generate_verification_token as generate_verification_token_util,
+    check_verification_token,
+    generate_password_reset_token,
+    check_password_reset_token
+)
+
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
 def generate_verification_token():
-    """Generate a secure random token for email verification"""
+    """Generate a secure random token for email verification (legacy support)"""
     return secrets.token_urlsafe(32)
 
 

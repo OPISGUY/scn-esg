@@ -1,0 +1,53 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2>Welcome to SCN ESG Platform!</h2>
+
+<p>Hi {{ user.first_name|default:"there" }},</p>
+
+<p>Thank you for joining our sustainability revolution. We're excited to help you track, analyze, and reduce your organization's carbon footprint.</p>
+
+<p>To get started, please verify your email address by clicking the button below:</p>
+
+<center>
+    <a href="{{ verification_url }}" class="button">
+        ✓ Verify Email Address
+    </a>
+</center>
+
+<p>Or copy and paste this link into your browser:</p>
+<div class="code-box">
+    {{ verification_url }}
+</div>
+
+<div class="info-box">
+    <strong>⏰ Important:</strong> This verification link will expire in <strong>24 hours</strong> for security reasons.
+</div>
+
+<p>Once verified, you'll be able to:</p>
+<ul>
+    <li>📊 Calculate your carbon footprint using GHG Protocol</li>
+    <li>🌱 Track Scope 1, 2, and 3 emissions</li>
+    <li>📈 Generate compliance reports (CSRD, ESRS, CDP)</li>
+    <li>🤖 Get AI-powered sustainability insights</li>
+    <li>💚 Purchase carbon offsets and achieve net-zero</li>
+</ul>
+
+<p>Need help? Our support team is here for you:</p>
+<p>
+    📧 Email: <a href="mailto:support@scnesg.com" style="color: #10b981;">support@scnesg.com</a><br>
+    📚 Documentation: <a href="https://docs.scnesg.com" style="color: #10b981;">docs.scnesg.com</a>
+</p>
+
+<p>We're thrilled to have you on board!</p>
+
+<p style="margin-top: 30px;">
+    Best regards,<br>
+    <strong>The SCN ESG Team</strong>
+</p>
+{% endblock %}
+
+{% block footer_note %}
+If you didn't create an account on SCN ESG Platform, please ignore this email or 
+<a href="mailto:security@scnesg.com" style="color: #9ca3af;">contact our security team</a>.
+{% endblock %}

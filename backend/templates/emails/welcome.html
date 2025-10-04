@@ -1,0 +1,54 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2>🎉 Welcome to SCN ESG Platform!</h2>
+
+<p>Hi {{ user.first_name }},</p>
+
+<p>Your email has been successfully verified! You now have full access to all features of the SCN ESG Platform.</p>
+
+<center>
+    <a href="{{ dashboard_url }}" class="button">
+        Go to Dashboard
+    </a>
+</center>
+
+<p><strong>What's Next?</strong></p>
+
+<ol>
+    <li><strong>Complete Your Profile</strong> - Add company details and sustainability goals</li>
+    <li><strong>Calculate Your First Footprint</strong> - Use our GHG Protocol-compliant calculator</li>
+    <li><strong>Explore AI Insights</strong> - Get personalized recommendations</li>
+    <li><strong>Generate Reports</strong> - Create compliance-ready reports</li>
+</ol>
+
+<div class="info-box">
+    <strong>💡 Pro Tip:</strong> Start with our <strong>Smart Data Entry</strong> feature to quickly input your emissions data through a conversational AI interface!
+</div>
+
+<p><strong>Key Features Available:</strong></p>
+<ul>
+    <li>📊 <strong>Carbon Calculator</strong> - GHG Protocol Scope 1, 2, and 3 emissions</li>
+    <li>🤖 <strong>Smart Data Entry</strong> - AI-powered conversational input</li>
+    <li>📈 <strong>CSRD Compliance</strong> - 300+ ESRS datapoints tracking</li>
+    <li>🌳 <strong>Carbon Offsets</strong> - Browse verified offset projects</li>
+    <li>📄 <strong>PDF Reports</strong> - Professional ESG reports with charts</li>
+    <li>💡 <strong>AI Insights</strong> - Gemini-powered recommendations</li>
+</ul>
+
+<p><strong>Need Help Getting Started?</strong></p>
+<p>
+    📚 <a href="https://docs.scnesg.com/getting-started" style="color: #10b981;">Quick Start Guide</a><br>
+    📧 <a href="mailto:support@scnesg.com" style="color: #10b981;">Contact Support</a><br>
+    💬 <a href="https://scnesg.com/community" style="color: #10b981;">Join Our Community</a>
+</p>
+
+<p style="margin-top: 30px;">
+    We're excited to support your sustainability journey!
+</p>
+
+<p>
+    Best regards,<br>
+    <strong>The SCN ESG Team</strong>
+</p>
+{% endblock %}

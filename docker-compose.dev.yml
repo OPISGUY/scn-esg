@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # MailHog - Email testing server for development
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: scn-esg-mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    environment:
+      MH_STORAGE: memory
+      MH_UI_WEB_PATH: mailhog
+    restart: unless-stopped
+    networks:
+      - scn-esg-dev
+
+  # PostgreSQL - Development database
+  postgres:
+    image: postgres:15-alpine
+    container_name: scn-esg-postgres-dev
+    environment:
+      POSTGRES_DB: scn_esg_dev
+      POSTGRES_USER: scn_user
+      POSTGRES_PASSWORD: dev_password_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - scn-esg-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scn_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - For caching and Celery (future)
+  redis:
+    image: redis:7-alpine
+    container_name: scn-esg-redis-dev
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - scn-esg-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+networks:
+  scn-esg-dev:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
