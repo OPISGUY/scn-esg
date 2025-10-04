@@ -7,9 +7,6 @@ import os
 import sys
 import django
 
-# Add backend to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
-
 # Setup Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'scn_esg_platform.settings')
 django.setup()

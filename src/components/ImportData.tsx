@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   Upload, FileSpreadsheet, Database, Zap, CheckCircle2,
-  XCircle, Loader2, AlertCircle, Download, FileJson,
-  ArrowRight, Eye, Settings, Save
+  Loader2, AlertCircle,
+  ArrowRight, Eye
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { buildApiUrl } from '../utils/api';
@@ -41,9 +41,9 @@ interface FilePreview {
 }
 
 const ImportData: React.FC = () => {
-  const { user } = useAuth();
+  useAuth();
   const [step, setStep] = useState<'select' | 'upload' | 'map' | 'execute' | 'complete'>('select');
-  const [selectedSource, setSelectedSource] = useState<string>('');
+  const [_selectedSource, setSelectedSource] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dataType, setDataType] = useState<string>('carbon');
   const [preview, setPreview] = useState<FilePreview | null>(null);

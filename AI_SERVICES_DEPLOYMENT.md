@@ -34,8 +34,9 @@ Total: 4/4 tests passed
 4. Add or update the environment variable:
    ```
    Key: GOOGLE_AI_API_KEY
-   Value: [Your API key from the local .env file]
+   Value: AIzaSyD4giqvYql_05EX3a6XPMCbaRPA65lFyzw
    ```
+   ⚠️ **Note**: Copy your actual API key from `backend/.env` file
 5. Click **"Save Changes"**
 
 ### Step 2: Deploy Updated Code
