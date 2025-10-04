@@ -144,6 +144,7 @@ class ConversationalAIService {
 
   constructor() {
     this.baseUrl = buildApiUrl('/carbon/ai');
+    console.log('🔧 ConversationalAIService baseUrl:', this.baseUrl);
   }
 
   /**
