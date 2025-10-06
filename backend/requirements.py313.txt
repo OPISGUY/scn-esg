@@ -33,6 +33,10 @@ numpy>=1.26.4
 # AI Services
 google-generativeai==0.8.3
 
+# External Platform Integrations
+cryptography>=41.0.0
+requests>=2.31.0
+
 # Production monitoring
 sentry-sdk==1.39.1
 
