@@ -13,9 +13,9 @@
 - **AI integrations:** Gemini tests live in `backend/test_phase5_ai.py` and `backend/quick_ai_test.py`; expect `GOOGLE_AI_API_KEY` in the environment and reuse helper wrappers before introducing new API calls.
 - **Frontend dev loop:** From repo root run `npm install` once, then `npm run dev`; use `npm run lint` and `npm run typecheck` before committing UI changes.
 - **Backend dev loop:** Inside `backend/` install with `pip install -r requirements.txt`; run `python manage.py migrate` plus `python manage.py runserver`. Use `requirements.render.txt` when matching Render's slim runtime.
-- **Testing & smoke checks:** `python backend/test_compliance.py` validates ESRS services; `python backend/test_full_deployment.py` exercises Railway/Vercel endpoints and highlights missing environment variables; run `npm run build` to ensure Vite bundling stays clean.
+- **Testing & smoke checks:** `python backend/test_compliance.py` validates ESRS services; `python backend/test_full_deployment.py` exercises Render/Vercel endpoints and highlights missing environment variables; run `npm run build` to ensure Vite bundling stays clean.
 - **Debug helpers:** `backend/debug_*` scripts target auth and infrastructure issues—pick the one matching the host (e.g. `debug_production_auth.py` for Vercel).
-- **Deployment scripts:** PowerShell helpers (`deploy.ps1`, `deploy_render.ps1`, `deploy_fixed.ps1`) orchestrate student-pack deployments; cross-check `DEPLOYMENT_GUIDE.md` for exact CLI sequences (`railway up`, `vercel --prod`).
+- **Deployment scripts:** PowerShell helpers (`deploy.ps1`, `deploy_render.ps1`, `deploy_fixed.ps1`) orchestrate deployments to Render and Vercel; cross-check `DEPLOYMENT_GUIDE.md` for exact CLI sequences.
 - **Environment flags:** Minimum secrets include `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_CORS_ALLOWED_ORIGINS`, and Gemini keys backend-side, plus `VITE_API_URL` frontend-side.
 - **Docs worth reading:** `PROJECT_DOCUMENTATION.md` (architecture deep dive), `AUTHENTICATION_IMPLEMENTATION_PLAN.md` (login flow requirements), `AGENTS.md` (role hand-offs), and `DEPLOYMENT_GUIDE.md` (student-pack deployment).
 - **Pull request expectations:** Match conventional commits, run lint/typecheck + backend smoke tests, and surface any remaining manual steps (e.g., creating test users with `backend/create_demo_user.py`).

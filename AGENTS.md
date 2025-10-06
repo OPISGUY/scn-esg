@@ -10,8 +10,8 @@ This guide maps the human roles, automated scripts, and AI helpers that keep the
 
 - **Product**: SCN ESG sustainability intelligence platform (React + Django)
 - **Frontend host**: Vercel (Vite React build served from `main` branch)
-- **Backend host**: Vercel serverless functions running the Django API (temporary until Railway reactivation)
-- **Data sources**: PostgreSQL (PlanetScale migration in progress) and GitHub-hosted ESRS datasets
+- **Backend host**: Render (Django REST API with PostgreSQL)
+- **Data sources**: PostgreSQL on Render and GitHub-hosted ESRS datasets
 - **Key docs**: `README.md`, `DEPLOYMENT_GUIDE.md`, `AUTHENTICATION_IMPLEMENTATION_PLAN.md`
 
 > ✅ Before adding or modifying an agent, skim the roadmap documents to stay aligned with the current phase.
@@ -27,7 +27,7 @@ This guide maps the human roles, automated scripts, and AI helpers that keep the
 | **AI Integration Agent** | Human / AI | Configure Google Gemini keys, prompt libraries, and guardrails; validate AI outputs | `backend/test_real_ai.py`, `backend/quick_ai_test.py`, environment secrets vault | Rotate Gemini API keys quarterly |
 | **QA Automation Agent** | Human / QA | Run end-to-end suites, file regression tickets, own release sign-off | `test_render_comprehensive.py`, `backend/test_full_deployment.py`, GitHub Actions workflow | Execute smoke tests on every Vercel production promotion |
 | **Docs Curator** | Human / Technical Writer | Keep guides in sync, ensure docs reflect latest workflows and fixes | `/AUTHENTICATION_*.md`, `/DEPLOYMENT_*.md`, this file | Combine doc updates with related PRs to preserve history |
-| **Deployment Scripts** | Automation | Reusable scripts for shipping to Vercel, Railway, and Render | `deploy.ps1`, `deploy_render.ps1`, `render-build.sh`, `render-start.sh` | Treat as immutable infrastructure; PR required for edits |
+| **Deployment Scripts** | Automation | Reusable scripts for shipping to Vercel and Render | `deploy.ps1`, `deploy_render.ps1`, `render-build.sh`, `render-start.sh` | Treat as immutable infrastructure; PR required for edits |
 | **Debugging Utilities** | Automation | Scriptable helpers for auth, API, and infrastructure diagnostics | `backend/debug_*.py`, `debug-auth.html`, `browser-test.html` | Run in isolated test environments with mock credentials |
 | **GitHub Copilot & Pair Agents** | AI Assistants | Accelerate implementation, suggest tests, flag gaps in docs | Integrated in IDE, documented in `AUTHENTICATION_PROGRESS_TRACKER.md` | Always review suggestions before commit |
 

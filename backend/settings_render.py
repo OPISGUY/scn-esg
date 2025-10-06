@@ -147,8 +147,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = [
     origin.strip() 
-    for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') 
+    for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'https://scn-esg.vercel.app,https://scn-esg-git-main.vercel.app').split(',') 
     if origin.strip()
+]
+
+# Add regex pattern for all Vercel preview deployments
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://scn-esg.*\.vercel\.app$",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
