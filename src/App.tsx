@@ -16,6 +16,7 @@ import PressPage from './pages/PressPage';
 import IntegrationsPage from './pages/IntegrationsPage';
 import APIPage from './pages/APIPage';
 import CookiePolicyPage from './pages/CookiePolicyPage';
+import DemoPage from './pages/DemoPage';
 import GDPRPage from './pages/GDPRPage';
 import AuthLayout from './components/auth/AuthLayout';
 import OnboardingWizard from './components/onboarding/OnboardingWizard';
@@ -93,6 +94,7 @@ function AppContent() {
     const path = window.location.pathname;
     
     // Public pages
+    if (path === '/demo') return <DemoPage />;
     if (path === '/free-trial') return <FreeTrialPage />;
     if (path === '/about') return <AboutPage />;
     if (path === '/careers') return <CareersPage />;

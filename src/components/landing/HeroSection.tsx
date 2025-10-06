@@ -137,20 +137,21 @@ const HeroSection: React.FC = () => {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <motion.a 
-              href="/signup"
+              href="/free-trial"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-white text-green-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-green-50 transition shadow-lg"
             >
               Start 14-Day Free Trial
             </motion.a>
-            <motion.button 
+            <motion.a 
+              href="/demo"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-green-600 transition"
             >
-              Watch Demo ▶
-            </motion.button>
+              Try Demo
+            </motion.a>
           </motion.div>
           
           {/* Trust Indicators */}
