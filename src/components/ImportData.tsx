@@ -43,7 +43,7 @@ interface FilePreview {
 const ImportData: React.FC = () => {
   useAuth();
   const [step, setStep] = useState<'select' | 'upload' | 'map' | 'execute' | 'complete'>('select');
-  const [_selectedSource, setSelectedSource] = useState<string>('');
+  const [, setSelectedSource] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dataType, setDataType] = useState<string>('carbon');
   const [preview, setPreview] = useState<FilePreview | null>(null);

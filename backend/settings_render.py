@@ -49,9 +49,13 @@ INSTALLED_APPS = [
     'carbon',
     'companies',
     'compliance', 
+    'data_import',
     'ewaste',
+    'integrations',
     'notifications',
     'organizations',
+    'payments',
+    'subscriptions',
     'users',
 ]
 

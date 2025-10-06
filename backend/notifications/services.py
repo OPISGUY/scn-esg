@@ -18,7 +18,7 @@ class NotificationService:
     """Service for handling all types of notifications"""
     
     def __init__(self):
-        self.from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@scnesg.com')
+        self.from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'hello@donatecomputers.uk')
     
     def send_notification(self, user, notification_type: str, context: Dict) -> bool:
         """Send a notification to a user"""

@@ -1,5 +1,5 @@
 """
-Celery configuration for SCN ESG Platform
+Celery configuration for Verdant By SCN
 """
 import os
 from celery import Celery

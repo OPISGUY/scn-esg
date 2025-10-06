@@ -1,9 +1,9 @@
 import React from 'react';
-import { TrendingUp, Users, Leaf, Award, Calendar, BarChart } from 'lucide-react';
+import { TrendingUp, Users, Leaf, Award } from 'lucide-react';
 import { mockImpactMetrics } from '../data/mockData';
 
 const ImpactViewer: React.FC = () => {
-  const { totalCO2Avoided, devicesRecycled, offsetsPurchased, reportsGenerated, monthlyTrend } = mockImpactMetrics;
+  const { totalCO2Avoided, devicesRecycled, offsetsPurchased, monthlyTrend } = mockImpactMetrics;
 
   const maxCO2 = Math.max(...monthlyTrend.map(m => m.co2Saved));
   const maxEwaste = Math.max(...monthlyTrend.map(m => m.ewaste));

@@ -12,7 +12,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { login, signup } = useAuth();
+  const { login, register } = useAuth();
   
   const [loginData, setLoginData] = useState({
     email: '',
@@ -37,7 +37,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
     try {
       await login(loginData.email, loginData.password);
       onSuccess();
-    } catch (err) {
+    } catch {
       setError('Invalid email or password');
     } finally {
       setLoading(false);
@@ -56,16 +56,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
     }
     
     try {
-      await signup({
-        firstName: signupData.firstName,
-        lastName: signupData.lastName,
+      await register({
+        first_name: signupData.firstName,
+        last_name: signupData.lastName,
         email: signupData.email,
         password: signupData.password,
         company: signupData.company,
-        role: signupData.role,
       });
       onSuccess();
-    } catch (err) {
+    } catch {
       setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);
@@ -88,7 +87,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10 flex flex-col justify-center max-w-md">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-4">SCN ESG Platform</h1>
+            <h1 className="text-4xl font-bold mb-4">Verdant By SCN</h1>
             <p className="text-xl opacity-90">
               Comprehensive sustainability management for modern organizations
             </p>
@@ -308,7 +307,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
               <div className="text-center text-sm text-gray-600">
                 <p className="mb-2">Demo Access:</p>
                 <div className="flex flex-col space-y-1 text-xs">
-                  <span>Email: demo@scnesg.com</span>
+                  <span>Email: demo@verdant.scn.com</span>
                   <span>Password: demo123</span>
                 </div>
               </div>

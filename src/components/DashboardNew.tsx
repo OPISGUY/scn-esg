@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   TrendingUp, 
   Recycle, 
@@ -6,30 +6,23 @@ import {
   FileText, 
   ArrowRight,
   Target,
-  AlertCircle,
   CheckCircle2,
   Leaf,
   GraduationCap,
   Scale,
   Info,
-  HelpCircle,
   Zap,
-  Plus,
   Upload,
   Play,
-  BarChart3,
-  Users,
   Building,
   Brain,
   Shield,
   Calendar,
-  Globe,
   Award,
-  TrendingDown,
-  Activity
+  TrendingDown
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { calculateCarbonBalance, calculateStudentsSupported, getRealTimeImpactMetrics } from '../data/mockData';
+import { calculateCarbonBalance, getRealTimeImpactMetrics } from '../data/mockData';
 
 interface DashboardProps {
   onViewChange: (view: string) => void;
@@ -72,7 +65,7 @@ const EmptyStateDashboard: React.FC<{
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                    Welcome to SCN ESG Platform
+                    Welcome to Verdant By SCN
                   </h1>
                   <p className="text-xl text-gray-600 mt-2">
                     Hi {user?.first_name}! Ready to start your sustainability journey?
@@ -347,7 +340,6 @@ const FullDashboard: React.FC<DashboardProps & { isDemoMode: boolean }> = ({ onV
   const { user } = useAuth();
   const [carbonBalance] = useState(calculateCarbonBalance());
   const [impactMetrics] = useState(getRealTimeImpactMetrics());
-  const [studentData] = useState(calculateStudentsSupported());
 
   const remainingEmissions = Math.max(0, carbonBalance.grossEmissions - carbonBalance.offsetsPurchased - carbonBalance.ewasteCredits);
   const offsetCost = remainingEmissions * 25;
@@ -520,7 +512,7 @@ const FullDashboard: React.FC<DashboardProps & { isDemoMode: boolean }> = ({ onV
           <MetricCard
             icon={<Leaf className="w-6 h-6 text-green-600" />}
             title="CO₂ Saved"
-            value={`${impactMetrics.totalCO2Saved.toFixed(1)}t`}
+            value={`${impactMetrics.totalCO2Avoided.toFixed(1)}t`}
             change="+12%"
             gradient="from-green-500 to-emerald-600"
           />

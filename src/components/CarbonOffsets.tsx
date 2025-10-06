@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Leaf, Users, Zap, Check, ArrowRight, Heart, Target, AlertCircle, HelpCircle } from 'lucide-react';
+import { ShoppingCart, Leaf, Users, Zap, Check, ArrowRight, Heart, Target, AlertCircle } from 'lucide-react';
 import { mockCarbonOffsets, calculateCarbonBalance } from '../data/mockData';
 
 const CarbonOffsets: React.FC = () => {
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [showCheckout, setShowCheckout] = useState(false);
   const [carbonBalance, setCarbonBalance] = useState(calculateCarbonBalance());
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
 
   // Update carbon balance when cart changes
   useEffect(() => {
@@ -20,13 +19,14 @@ const CarbonOffsets: React.FC = () => {
     }));
   };
 
-  const removeFromCart = (offsetId: string) => {
-    setCart(prev => {
-      const newCart = { ...prev };
-      delete newCart[offsetId];
-      return newCart;
-    });
-  };
+  // Function to remove items from cart - currently unused but kept for future feature
+  // const removeFromCart = (offsetId: string) => {
+  //   setCart(prev => {
+  //     const newCart = { ...prev };
+  //     delete newCart[offsetId];
+  //     return newCart;
+  //   });
+  // };
 
   const getTotalCO2Offset = () => {
     return Object.entries(cart).reduce((total, [id, quantity]) => {

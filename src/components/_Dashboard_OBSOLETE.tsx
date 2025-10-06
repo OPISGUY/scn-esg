@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   TrendingUp, 
   Recycle, 
@@ -6,15 +6,12 @@ import {
   FileText, 
   ArrowRight,
   Target,
-  AlertCircle,
-  CheckCircle2,
   Leaf,
   GraduationCap,
   Scale,
   Info,
   HelpCircle,
   Zap,
-  Plus,
   Upload,
   Play
 } from 'lucide-react';
@@ -60,7 +57,7 @@ const EmptyStateDashboard: React.FC<{
       <div className="bg-gradient-to-r from-green-600 to-emerald-700 rounded-2xl p-8 text-white">
         <div className="max-w-4xl">
           <h1 className="text-3xl font-bold mb-4">
-            Welcome to SCN ESG Platform, {user?.first_name}!
+            Welcome to Verdant By SCN, {user?.first_name}!
           </h1>
           <p className="text-lg text-green-100 mb-6">
             You're all set! Let's start tracking your organization's environmental impact and sustainability journey.
@@ -277,7 +274,7 @@ const FullDashboard: React.FC<DashboardProps & { isDemoMode: boolean }> = ({ onV
             </span>
             <span className="text-blue-600 ml-2">
               {user?.email === 'business@scn.com' 
-                ? '- Welcome to the SCN ESG Platform demo' 
+                ? '- Welcome to the Verdant By SCN demo' 
                 : '- This data is for demonstration purposes'}
             </span>
           </div>
@@ -287,7 +284,7 @@ const FullDashboard: React.FC<DashboardProps & { isDemoMode: boolean }> = ({ onV
       {/* Main Carbon Balance Overview */}
       <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-8 text-white">
         <div className="max-w-4xl">
-          <h1 className="text-3xl font-bold mb-4">SCN ESG Platform Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-4">Verdant By SCN Dashboard</h1>
           <p className="text-lg text-slate-200 mb-6">
             Track your carbon footprint and environmental impact
           </p>

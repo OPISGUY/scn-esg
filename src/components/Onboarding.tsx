@@ -10,7 +10,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
   const steps = [
     {
-      title: 'Welcome to SCN ESG Platform!',
+      title: 'Welcome to Verdant By SCN!',
       description: 'Your comprehensive sustainability management solution',
       content: (
         <div className="text-center">

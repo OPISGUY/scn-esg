@@ -1,6 +1,22 @@
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { HelpProvider } from './contexts/HelpContext';
+import LandingPage from './components/landing/LandingPage';
+import FreeTrialPage from './pages/FreeTrialPage';
+import AboutPage from './pages/AboutPage';
+import CareersPage from './pages/CareersPage';
+import ContactPage from './pages/ContactPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+import BlogPage from './pages/BlogPage';
+import CaseStudiesPage from './pages/CaseStudiesPage';
+import DocsPage from './pages/DocsPage';
+import SupportPage from './pages/SupportPage';
+import PressPage from './pages/PressPage';
+import IntegrationsPage from './pages/IntegrationsPage';
+import APIPage from './pages/APIPage';
+import CookiePolicyPage from './pages/CookiePolicyPage';
+import GDPRPage from './pages/GDPRPage';
 import AuthLayout from './components/auth/AuthLayout';
 import OnboardingWizard from './components/onboarding/OnboardingWizard';
 import Layout from './components/Layout';
@@ -71,9 +87,35 @@ function AppContent() {
     );
   }
 
-  // Show login page if not authenticated
+  // Show landing page or auth for unauthenticated users
   if (!isAuthenticated) {
-    return <AuthLayout />;
+    // Check URL to determine which page to show
+    const path = window.location.pathname;
+    
+    // Public pages
+    if (path === '/free-trial') return <FreeTrialPage />;
+    if (path === '/about') return <AboutPage />;
+    if (path === '/careers') return <CareersPage />;
+    if (path === '/contact') return <ContactPage />;
+    if (path === '/privacy') return <PrivacyPage />;
+    if (path === '/terms') return <TermsPage />;
+    if (path === '/blog') return <BlogPage />;
+    if (path === '/case-studies') return <CaseStudiesPage />;
+    if (path === '/docs') return <DocsPage />;
+    if (path === '/support') return <SupportPage />;
+    if (path === '/press') return <PressPage />;
+    if (path === '/integrations') return <IntegrationsPage />;
+    if (path === '/api') return <APIPage />;
+    if (path === '/cookie-policy') return <CookiePolicyPage />;
+    if (path === '/gdpr') return <GDPRPage />;
+    
+    // Auth pages
+    if (path === '/login' || path === '/signup') {
+      return <AuthLayout />;
+    }
+    
+    // Default: Landing page
+    return <LandingPage />;
   }
 
   // Show onboarding for users who haven't completed it (except demo user)

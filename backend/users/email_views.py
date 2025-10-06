@@ -64,7 +64,7 @@ def send_verification_email(user, request=None):
         plain_message = f"""
 Hi {user.first_name},
 
-Welcome to SCN ESG Platform! Please verify your email address by clicking the link below:
+Welcome to Verdant By SCN! Please verify your email address by clicking the link below:
 
 {verification_url}
 
@@ -73,12 +73,12 @@ This link will expire in 24 hours.
 If you didn't create an account, please ignore this email.
 
 Best regards,
-SCN ESG Platform Team
+Verdant By SCN Team
         """
         
         # Send email
         send_mail(
-            subject='Verify Your SCN ESG Platform Account',
+            subject='Verify Your Verdant By SCN Account',
             message=plain_message,
             html_message=html_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -238,11 +238,11 @@ def forgot_password(request):
         # Send password reset email
         try:
             send_mail(
-                subject='Reset Your SCN ESG Platform Password',
+                subject='Reset Your Verdant By SCN Password',
                 message=f"""
 Hi {user.first_name},
 
-You requested a password reset for your SCN ESG Platform account.
+You requested a password reset for your Verdant By SCN account.
 
 Click the link below to reset your password:
 {reset_url}
@@ -252,7 +252,7 @@ This link will expire in 2 hours for security reasons.
 If you didn't request this reset, please ignore this email.
 
 Best regards,
-SCN ESG Platform Team
+Verdant By SCN Team
                 """,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],

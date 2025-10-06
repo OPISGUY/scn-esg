@@ -108,7 +108,7 @@ class CarbonService {
         } else {
           errorMessage = JSON.stringify(error);
         }
-      } catch (e) {
+      } catch {
         errorMessage = `HTTP ${response.status}: ${response.statusText}`;
       }
       throw new Error(errorMessage);

@@ -44,7 +44,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = () => {
 
   const steps = [
     {
-      title: "Welcome to SCN ESG Platform!",
+      title: "Welcome to Verdant By SCN!",
       subtitle: "Let's set up your organization profile",
       component: WelcomeStep
     },
@@ -254,7 +254,7 @@ const WelcomeStep: React.FC<any> = ({ user }) => (
       Welcome, {user?.first_name}!
     </h2>
     <p className="text-lg text-gray-600 mb-8">
-      Let's get your organization set up on the SCN ESG Platform. This quick setup will help us 
+      Let's get your organization set up on Verdant By SCN. This quick setup will help us 
       personalize your experience and provide relevant insights for your sustainability journey.
     </p>
     
@@ -385,7 +385,7 @@ const GoalsStep: React.FC<any> = ({ formData, updateFormData }) => {
   const toggleGoal = (goalId: string) => {
     const currentGoals = formData.sustainabilityGoals;
     const updatedGoals = currentGoals.includes(goalId)
-      ? currentGoals.filter(id => id !== goalId)
+      ? currentGoals.filter((id: string) => id !== goalId)
       : [...currentGoals, goalId];
     updateFormData({ sustainabilityGoals: updatedGoals });
   };
@@ -453,7 +453,7 @@ const ReportingStep: React.FC<any> = ({ formData, updateFormData }) => {
   const toggleFramework = (frameworkId: string) => {
     const currentFrameworks = formData.reportingRequirements;
     const updatedFrameworks = currentFrameworks.includes(frameworkId)
-      ? currentFrameworks.filter(id => id !== frameworkId)
+      ? currentFrameworks.filter((id: string) => id !== frameworkId)
       : [...currentFrameworks, frameworkId];
     updateFormData({ reportingRequirements: updatedFrameworks });
   };
@@ -516,7 +516,7 @@ const ChallengesStep: React.FC<any> = ({ formData, updateFormData }) => {
   const toggleChallenge = (challengeId: string) => {
     const currentChallenges = formData.currentChallenges;
     const updatedChallenges = currentChallenges.includes(challengeId)
-      ? currentChallenges.filter(id => id !== challengeId)
+      ? currentChallenges.filter((id: string) => id !== challengeId)
       : [...currentChallenges, challengeId];
     updateFormData({ currentChallenges: updatedChallenges });
   };
@@ -564,14 +564,14 @@ const ChallengesStep: React.FC<any> = ({ formData, updateFormData }) => {
   );
 };
 
-const CompletionStep: React.FC<any> = ({ formData }) => (
+const CompletionStep: React.FC<any> = () => (
   <div className="text-center">
     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
       <CheckCircle className="w-10 h-10 text-green-600" />
     </div>
     
     <h2 className="text-2xl font-bold text-gray-900 mb-4">
-      Welcome to the SCN ESG Platform!
+      Welcome to Verdant By SCN!
     </h2>
     
     <p className="text-lg text-gray-600 mb-8">

@@ -1,5 +1,5 @@
 """
-Production settings for SCN ESG Platform.
+Production settings for Verdant By SCN.
 This file extends the base settings for deployment.
 """
 

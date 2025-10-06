@@ -65,7 +65,7 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onComplete }) => {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Building className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">SCN ESG Platform</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Verdant By SCN</h1>
           <p className="text-gray-600 mt-2">
             {isLogin ? 'Welcome back!' : 'Start your sustainability journey'}
           </p>
@@ -230,7 +230,7 @@ const LoginSignup: React.FC<LoginSignupProps> = ({ onComplete }) => {
             onClick={() => {
               // Set demo user
               setFormData({
-                email: 'demo@scnesg.com',
+                email: 'demo@verdant.scn.com',
                 password: 'demo123',
                 firstName: 'Demo',
                 lastName: 'User',

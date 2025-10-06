@@ -169,7 +169,7 @@ def health(request):
     """Health check endpoint"""
     return Response({
         'status': 'healthy',
-        'message': 'SCN ESG Platform API is running',
+        'message': 'Verdant By SCN API is running',
         'version': '7.5.0'
     }, status=status.HTTP_200_OK)
 

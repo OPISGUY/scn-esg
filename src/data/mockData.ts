@@ -132,7 +132,9 @@ export const calculateCarbonBalance = () => {
     grossEmissions: grossEmissions || 0,
     scnOffsets: scnOffsets || 0,
     netEmissions: netEmissions || 0,
-    neutralityPercentage: isFinite(neutralityPercentage) ? neutralityPercentage : 0
+    neutralityPercentage: isFinite(neutralityPercentage) ? neutralityPercentage : 0,
+    offsetsPurchased: purchasedOffsets || 0,
+    ewasteCredits: Number(mockImpactMetrics.carbonCreditsFromDonations) || 0
   };
 };
 

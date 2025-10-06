@@ -31,7 +31,7 @@ def health_check(request):
 def api_root(request):
     """API root endpoint with available endpoints"""
     return JsonResponse({
-        'message': 'SCN ESG Platform API',
+        'message': 'Verdant By SCN API',
         'version': '7.0.0',
         'status': 'live',
         'endpoints': {
@@ -65,6 +65,8 @@ urlpatterns = [
     path('api/v1/analytics/', include('analytics.urls')),
     path('compliance/', include('compliance.urls')),
     path('api/v1/imports/', include('data_import.urls')),
+    path('api/v1/integrations/', include('integrations.urls')),
+    path('api/v1/', include('subscriptions.urls')),
 ]
 
 # Serve media files during development

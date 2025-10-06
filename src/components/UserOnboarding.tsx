@@ -22,7 +22,7 @@ const UserOnboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
   const steps = [
     {
-      title: "Welcome to SCN ESG Platform!",
+      title: "Welcome to Verdant By SCN!",
       icon: <Building className="w-16 h-16 text-green-600" />,
       content: (
         <div className="text-center">
@@ -142,7 +142,7 @@ const UserOnboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       content: (
         <div className="text-center">
           <p className="text-lg text-gray-700 mb-6">
-            Congratulations! You're ready to start your sustainability journey with SCN ESG Platform.
+            Congratulations! You're ready to start your sustainability journey with Verdant By SCN.
           </p>
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <p className="text-green-800 font-medium">Quick Start Tips:</p>

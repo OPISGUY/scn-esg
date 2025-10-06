@@ -72,6 +72,8 @@ INSTALLED_APPS = [
     'notifications',
     'compliance',
     'data_import',
+    'subscriptions',
+    'integrations',
 ]
 
 MIDDLEWARE = [
@@ -229,8 +231,8 @@ CORS_ALLOW_HEADERS = [
 
 # API Documentation
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'SCN ESG Platform API',
-    'DESCRIPTION': 'API for SCN ESG Platform - Carbon footprint tracking and reporting',
+    'TITLE': 'Verdant By SCN API',
+    'DESCRIPTION': 'API for Verdant By SCN - Carbon footprint tracking and reporting',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SCHEMA_PATH_PREFIX': '/api/v1/',
@@ -267,8 +269,8 @@ else:
     EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
     EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
-DEFAULT_FROM_EMAIL = 'SCN ESG Platform <noreply@scnesg.com>'
-EMAIL_SUBJECT_PREFIX = '[SCN ESG] '
+DEFAULT_FROM_EMAIL = 'Verdant By SCN <hello@donatecomputers.uk>'
+EMAIL_SUBJECT_PREFIX = '[Verdant By SCN] '
 
 # Frontend URL for email links
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
@@ -314,3 +316,14 @@ AI_BENCHMARK_CACHE_TIMEOUT = 21600  # 6 hours
 ENABLE_DEMO_USERS = os.getenv('ENABLE_DEMO_USERS', 'True').lower() == 'true'
 RESET_DEMO_PASSWORDS = os.getenv('RESET_DEMO_PASSWORDS', 'True').lower() == 'true'
 DEMO_COMPANY_NAME = os.getenv('DEMO_COMPANY_NAME', 'SCN Demo Company')
+
+# Stripe Configuration (Phase A3)
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')
+
+# Subscription Tier Price IDs
+STRIPE_PRICE_FREE_GBP = 'price_1SEgOh5ijEjjetJRlpXSLhK2'
+STRIPE_PRICE_STARTER_GBP = 'price_1SEgJC5ijEjjetJR9jjqJrlr'
+STRIPE_PRICE_PRO_GBP = 'price_1SEgJC5ijEjjetJRlgQm9CJ7'
+STRIPE_PRICE_ENT_GBP = 'price_1SEgJC5ijEjjetJRXTbog8XM'

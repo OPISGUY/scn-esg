@@ -1,0 +1,65 @@
+# Robots.txt for SCN ESG Platform
+# Last updated: October 5, 2025
+
+# Global rules for all bots
+User-agent: *
+
+# Allow public pages
+Allow: /
+Allow: /login
+Allow: /signup
+
+# Disallow authenticated areas
+Disallow: /dashboard
+Disallow: /carbon
+Disallow: /csrd
+Disallow: /ewaste
+Disallow: /ai-insights
+Disallow: /settings
+Disallow: /api/
+
+# Disallow private resources
+Disallow: /private/
+Disallow: /*.pdf$
+Disallow: /*.csv$
+Disallow: /*.json$
+
+# Allow search engines to access static assets
+Allow: /assets/
+Allow: /*.css
+Allow: /*.js
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.png
+Allow: /*.svg
+Allow: /*.webp
+Allow: /*.ico
+
+# Sitemap location
+Sitemap: https://scn-esg.vercel.app/sitemap.xml
+
+# Crawl-delay to avoid overloading server
+Crawl-delay: 10
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Crawl-delay: 5
+
+User-agent: Bingbot
+Crawl-delay: 5
+
+User-agent: Slurp
+Crawl-delay: 10
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

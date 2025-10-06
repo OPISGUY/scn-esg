@@ -65,7 +65,7 @@ const EmptyStateDashboard: React.FC<{
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                    Welcome to SCN ESG Platform
+                    Welcome to Verdant By SCN
                   </h1>
                   <p className="text-xl text-gray-600 mt-2">
                     Hi {user?.first_name}! Ready to start your sustainability journey?

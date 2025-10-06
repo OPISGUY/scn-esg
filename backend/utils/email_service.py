@@ -1,6 +1,6 @@
 """
-Email Service Layer for SCN ESG Platform
-Handles sending emails with retry logic, error handling, and logging
+Email Service Layer for Verdant By SCN
+Handles sending emails with retry logic, error handling, and            'subject': 'Verify Your Email - Verdant By SCN',logging
 """
 
 import logging
@@ -105,7 +105,7 @@ class EmailService:
             'user': user,
             'verification_url': verification_url,
             'current_year': datetime.now().year,
-            'subject': 'Verify Your Email - SCN ESG Platform'
+            'subject': 'Verify Your Email - Verdant By SCN'
         }
         
         try:
@@ -113,7 +113,7 @@ class EmailService:
             text_content = render_to_string('emails/verification_email.txt', context)
             
             return EmailService._send_email_with_retry(
-                subject='Verify Your Email - SCN ESG Platform',
+                subject='Verify Your Email - Verdant By SCN',
                 html_content=html_content,
                 text_content=text_content,
                 to_emails=[user.email],
@@ -138,7 +138,7 @@ class EmailService:
             'user': user,
             'reset_url': reset_url,
             'current_year': datetime.now().year,
-            'subject': 'Password Reset Request - SCN ESG Platform'
+                        'subject': 'Password Reset Request - Verdant By SCN',
         }
         
         try:
@@ -146,7 +146,7 @@ class EmailService:
             text_content = render_to_string('emails/password_reset.txt', context)
             
             return EmailService._send_email_with_retry(
-                subject='Password Reset Request - SCN ESG Platform',
+                subject='Password Reset Request - Verdant By SCN',
                 html_content=html_content,
                 text_content=text_content,
                 to_emails=[user.email],
@@ -171,7 +171,7 @@ class EmailService:
             'user': user,
             'dashboard_url': dashboard_url,
             'current_year': datetime.now().year,
-            'subject': 'Welcome to SCN ESG Platform!'
+            'subject': 'Welcome to Verdant By SCN!'
         }
         
         try:
@@ -180,7 +180,7 @@ class EmailService:
             text_content = strip_tags(html_content)
             
             return EmailService._send_email_with_retry(
-                subject='Welcome to SCN ESG Platform!',
+                subject='Welcome to Verdant By SCN!',
                 html_content=html_content,
                 text_content=text_content,
                 to_emails=[user.email],
@@ -208,13 +208,13 @@ class EmailService:
         Returns:
             True if email sent successfully
         """
-        subject = f"{inviter_name} invited you to {company_name} on SCN ESG Platform"
+        subject = f"{inviter_name} invited you to {company_name} on Verdant By SCN"
         
         html_content = f"""
         <html>
         <body style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>You've been invited!</h2>
-            <p><strong>{inviter_name}</strong> has invited you to join <strong>{company_name}</strong> on the SCN ESG Platform.</p>
+            <p><strong>{inviter_name}</strong> has invited you to join <strong>{company_name}</strong> on Verdant By SCN.</p>
             <p><a href="{invitation_url}" style="background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Accept Invitation</a></p>
             <p>Or copy this link: {invitation_url}</p>
             <p>If you don't want to join, you can safely ignore this email.</p>
@@ -225,7 +225,7 @@ class EmailService:
         text_content = f"""
         You've been invited!
         
-        {inviter_name} has invited you to join {company_name} on the SCN ESG Platform.
+        {inviter_name} has invited you to join {company_name} on Verdant By SCN.
         
         Click here to accept: {invitation_url}
         
