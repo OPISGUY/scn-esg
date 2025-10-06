@@ -220,6 +220,15 @@ if redis_url := os.getenv('REDIS_URL'):
 # AI Services Configuration
 GOOGLE_AI_API_KEY = os.getenv('GOOGLE_AI_API_KEY')
 
+# Stripe Configuration
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')
+
+# Demo/test user seeding controls
+ENABLE_DEMO_USERS = os.getenv('ENABLE_DEMO_USERS', 'True').lower() == 'true'
+RESET_DEMO_PASSWORDS = os.getenv('RESET_DEMO_PASSWORDS', 'True').lower() == 'true'
+
 # Security settings for production
 if not DEBUG:
     SECURE_SSL_REDIRECT = True

@@ -18,13 +18,15 @@
   "env": {
     "VITE_APP_NAME": "SCN ESG Platform",
     "VITE_ENVIRONMENT": "production",
-    "VITE_API_URL": "https://scn-esg-backend.onrender.com"
+    "VITE_API_URL": "https://scn-esg-backend.onrender.com",
+    "VITE_STRIPE_PUBLISHABLE_KEY": ""
   },
   "build": {
     "env": {
       "VITE_APP_NAME": "SCN ESG Platform",
       "VITE_ENVIRONMENT": "production",
-      "VITE_API_URL": "https://scn-esg-backend.onrender.com"
+      "VITE_API_URL": "https://scn-esg-backend.onrender.com",
+      "VITE_STRIPE_PUBLISHABLE_KEY": ""
     }
   },
   "headers": [
