@@ -1,6 +1,26 @@
 /**
  * ConversationalDataEntry - Smart Data Entry Component (Phase 1 MVP)
  * Real AI integration with context-aware conversational extraction
+ * 
+ * ✅ UNIFIED CONTEXT INTEGRATION:
+ * This component now uses CarbonFootprintContext to give the AI full access
+ * to the user's current carbon data. Benefits:
+ * 
+ * 1. AI Context Awareness: AI receives currentFootprint (scope1/2/3, total)
+ *    and can make intelligent suggestions based on existing data
+ * 
+ * 2. Smart Operations: AI can differentiate between adding new data vs.
+ *    replacing existing data, preventing duplicate entries
+ * 
+ * 3. Anomaly Detection: AI can flag unusual values by comparing to baseline
+ *    (e.g., "That's 10x your normal usage - is this correct?")
+ * 
+ * 4. Instant Propagation: Updates via updateFootprint() immediately reflect
+ *    in Dashboard, Reports, AIInsights, and all other components
+ * 
+ * 5. Live Preview: LiveFootprintPreview shows pending changes before applying
+ * 
+ * The AI now truly understands the user's carbon footprint story!
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -18,7 +38,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { carbonService } from '../services/carbonService';
+import { useCarbonFootprint } from '../contexts/CarbonFootprintContext';
 import {
   conversationalAIService,
   type ExtractedData,
@@ -60,6 +80,15 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
   onDataExtracted,
 }) => {
   const { user } = useAuth();
+  
+  // Use unified carbon footprint context for AI to have full data context
+  const { 
+    currentFootprint: contextFootprint, 
+    updateFootprint,
+    createFootprint,
+    isLoading: footprintLoading,
+    error: footprintError
+  } = useCarbonFootprint();
 
   // State
   const [messages, setMessages] = useState<ConversationalMessage[]>([
@@ -75,11 +104,12 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [currentFootprintId, setCurrentFootprintId] = useState<string | null>(null);
-  const [currentFootprint, setCurrentFootprint] = useState<any>(null);
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [showDocumentUpload, setShowDocumentUpload] = useState(false);
+  
+  // Combine local and context errors
+  const [localError, setLocalError] = useState<string | null>(null);
+  const displayError = footprintError || localError;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognition = useRef<any>(null);
@@ -121,82 +151,32 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Load or create carbon footprint on mount
+  // Footprint now loaded automatically by CarbonFootprintContext
+  // Just ensure we have one to work with
   useEffect(() => {
-    const loadFootprint = async () => {
-      if (!user) return;
-
-      try {
-        console.log('🔍 Loading footprint for user:', user.email);
-        
-        // Get user's most recent footprint or create new one
-        const footprints = await carbonService.getFootprints();
-        const footprintsArray = Array.isArray(footprints) ? footprints : [];
-        
-        console.log(`📊 Found ${footprintsArray.length} existing footprints`);
-        
-        if (footprintsArray.length > 0) {
-          // Use most recent
-          const latest = footprintsArray[0];
-          if (latest.id) {
-            console.log('✅ Using existing footprint:', latest.id);
-            setCurrentFootprintId(latest.id);
-            setCurrentFootprint({
-              scope1_emissions: Number(latest.scope1_emissions) || 0,
-              scope2_emissions: Number(latest.scope2_emissions) || 0,
-              scope3_emissions: Number(latest.scope3_emissions) || 0,
-              total_emissions: Number(latest.total_emissions) || 0,
-            });
-          }
-        } else {
-          // No footprints exist - create a new one
-          console.log('📝 Creating new footprint for user...');
-          try {
-            const newFootprint = await carbonService.createFootprint({
-              reporting_period: new Date().getFullYear().toString(),
-              scope1_emissions: 0,
-              scope2_emissions: 0,
-              scope3_emissions: 0,
-              status: 'draft',
-            });
-            
-            if (newFootprint.id) {
-              console.log('✅ Created new footprint:', newFootprint.id);
-              setCurrentFootprintId(newFootprint.id);
-              setCurrentFootprint({
-                scope1_emissions: 0,
-                scope2_emissions: 0,
-                scope3_emissions: 0,
-                total_emissions: 0,
-              });
-            }
-          } catch (createError) {
-            console.error('❌ Failed to create footprint:', createError);
-            setError(`Unable to create footprint: ${(createError as Error).message}. Please contact support if this persists.`);
-            // Don't set temp ID - leave it null so AI requests skip footprint_id
-            setCurrentFootprint({
-              scope1_emissions: 0,
-              scope2_emissions: 0,
-              scope3_emissions: 0,
-              total_emissions: 0,
-            });
-          }
+    const ensureFootprint = async () => {
+      if (!user || footprintLoading) return;
+      
+      // If no footprint exists, create one
+      if (!contextFootprint) {
+        console.log('🤖 AI: Creating initial footprint for conversational data entry');
+        try {
+          await createFootprint({
+            reporting_period: new Date().getFullYear().toString(),
+            scope1_emissions: 0,
+            scope2_emissions: 0,
+            scope3_emissions: 0,
+            status: 'draft',
+          });
+        } catch (error) {
+          console.error('❌ AI: Failed to create initial footprint:', error);
+          setLocalError(`Unable to create footprint: ${(error as Error).message}`);
         }
-      } catch (error) {
-        console.error('❌ Failed to load footprints:', error);
-        setError(`Unable to load footprints: ${(error as Error).message}. Please refresh or contact support.`);
-        // Don't fall back to localStorage or temp IDs
-        setCurrentFootprint({
-          scope1_emissions: 0,
-          scope2_emissions: 0,
-          scope3_emissions: 0,
-          total_emissions: 0,
-        });
       }
     };
 
-    loadFootprint();
-  }, [user]);
+    ensureFootprint();
+  }, [user, contextFootprint, footprintLoading, createFootprint]);
 
   // Set auth token when user changes
   useEffect(() => {
@@ -208,7 +188,7 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
 
   // Handle sending message
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || isProcessing || !currentFootprintId) return;
+    if (!inputValue.trim() || isProcessing || !contextFootprint?.id) return;
 
     const userMessage: ConversationalMessage = {
       id: Date.now().toString(),
@@ -221,7 +201,7 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
     const currentInput = inputValue;
     setInputValue('');
     setIsProcessing(true);
-    setError(null);
+    setLocalError(null);
 
     try {
       // Build conversation history (last 10 messages)
@@ -233,16 +213,23 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
           content: msg.content,
         }));
 
-      // Only pass footprint ID if it's a valid UUID (not a temp/local ID)
-      const isValidUUID = currentFootprintId && 
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentFootprintId);
+      // AI now has full context from unified footprint
+      console.log('🤖 AI: Processing with full footprint context:', {
+        footprintId: contextFootprint.id,
+        currentData: {
+          scope1: contextFootprint.scope1_emissions,
+          scope2: contextFootprint.scope2_emissions,
+          scope3: contextFootprint.scope3_emissions,
+          total: contextFootprint.total_emissions
+        }
+      });
       
-      // Call AI extraction API
+      // Call AI extraction API with full context
       const result: ConversationalExtractionResponse =
         await conversationalAIService.extractFromConversation(
           currentInput,
           conversationHistory,
-          isValidUUID ? currentFootprintId : undefined,
+          contextFootprint.id,
           sessionId || undefined
         );
 
@@ -317,7 +304,7 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
-      setError(error instanceof Error ? error.message : 'Processing error');
+      setLocalError(error instanceof Error ? error.message : 'Processing error');
     } finally {
       setIsProcessing(false);
     }
@@ -325,7 +312,7 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
 
   // Handle accepting a pending change
   const handleAcceptChange = async (change: PendingChange) => {
-    if (!currentFootprintId) return;
+    if (!contextFootprint?.id) return;
 
     try {
       // Build update data
@@ -341,22 +328,29 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
         },
       };
 
-      // Update footprint
+      console.log('🤖 AI: Updating footprint via unified context:', {
+        footprintId: contextFootprint.id,
+        field: change.field,
+        operation: change.operation,
+        value: change.value
+      });
+
+      // Update footprint through AI service
       const result = await conversationalAIService.updateWithContext({
-        footprint_id: currentFootprintId,
+        footprint_id: contextFootprint.id,
         update_data: updateData,
         conversation_message_id: change.messageId,
         user_confirmed: true,
       });
 
-      // Update local footprint state
+      // Update through unified context to propagate to all components
       if (result.updated_footprint) {
-        setCurrentFootprint({
+        await updateFootprint(contextFootprint.id, {
           scope1_emissions: result.updated_footprint.scope1_emissions,
           scope2_emissions: result.updated_footprint.scope2_emissions,
           scope3_emissions: result.updated_footprint.scope3_emissions,
-          total_emissions: result.updated_footprint.total_emissions,
         });
+        console.log('✅ AI: Footprint updated in unified context - all components will reflect changes');
       }
 
       // Remove from pending changes
@@ -502,12 +496,12 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
         </div>
 
         {/* Error Banner */}
-        {error && (
+        {displayError && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-500" />
             <div>
               <p className="text-sm font-medium text-red-800">Error</p>
-              <p className="text-xs text-red-600">{error}</p>
+              <p className="text-xs text-red-600">{displayError}</p>
             </div>
           </div>
         )}
@@ -606,7 +600,7 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
             {/* Document Upload Button */}
             <button
               onClick={() => setShowDocumentUpload(true)}
-              disabled={isProcessing || !currentFootprintId}
+              disabled={isProcessing || !contextFootprint?.id}
               className="p-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
               title="Upload document"
             >
@@ -621,7 +615,7 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
                 placeholder="Describe your emissions or upload a document..."
                 className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={2}
-                disabled={isProcessing || !currentFootprintId}
+                disabled={isProcessing || !contextFootprint?.id}
               />
               <button
                 onClick={handleVoiceInput}
@@ -637,7 +631,7 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
             </div>
             <button
               onClick={handleSendMessage}
-              disabled={!inputValue.trim() || isProcessing || !currentFootprintId}
+              disabled={!inputValue.trim() || isProcessing || !contextFootprint?.id}
               className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Send className="w-4 h-4" />
@@ -672,7 +666,7 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
                 onUploadComplete={handleDocumentUploadComplete}
                 onUploadError={handleDocumentUploadError}
                 conversationSessionId={sessionId || undefined}
-                footprintId={currentFootprintId || undefined}
+                footprintId={contextFootprint?.id}
               />
             </div>
           </div>
@@ -681,9 +675,14 @@ const ConversationalDataEntry: React.FC<ConversationalDataEntryProps> = ({
 
       {/* Right: Live Footprint Preview */}
       <div className="flex flex-col h-full max-h-[800px] overflow-y-auto">
-        {currentFootprint ? (
+        {contextFootprint ? (
           <LiveFootprintPreview
-            currentFootprint={currentFootprint}
+            currentFootprint={{
+              scope1_emissions: contextFootprint.scope1_emissions || 0,
+              scope2_emissions: contextFootprint.scope2_emissions || 0,
+              scope3_emissions: contextFootprint.scope3_emissions || 0,
+              total_emissions: contextFootprint.total_emissions || 0,
+            }}
             pendingChanges={pendingChanges}
             onAcceptChange={handleAcceptChange}
             onRejectChange={handleRejectChange}

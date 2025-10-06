@@ -22,6 +22,7 @@ import {
   TrendingDown
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useCarbonFootprint } from '../contexts/CarbonFootprintContext';
 import { calculateCarbonBalance, getRealTimeImpactMetrics } from '../data/mockData';
 
 interface DashboardProps {
@@ -30,11 +31,24 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   const { user } = useAuth();
+  const { hasFootprints, isLoading: footprintsLoading } = useCarbonFootprint();
   const [showDemoMode, setShowDemoMode] = useState(false);
 
   // Check if user is the demo user or has real data
   const isDemoUser = user?.email === 'demo@scn.com';
-  const hasRealData = isDemoUser; // Demo user always has data, others need to add data
+  const hasRealData = hasFootprints || isDemoUser;
+
+  // Show loading state while fetching footprints
+  if (footprintsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!hasRealData && !showDemoMode) {
     return <EmptyStateDashboard onViewChange={onViewChange} onShowDemo={() => setShowDemoMode(true)} />;
@@ -345,9 +359,12 @@ const ImportOption: React.FC<{
 // Full Dashboard with Data
 const FullDashboard: React.FC<DashboardProps & { isDemoMode: boolean }> = ({ onViewChange, isDemoMode }) => {
   const { user } = useAuth();
+  // Note: currentFootprint from useCarbonFootprint() is available but dashboard currently uses mock carbonBalance
+  // TODO: Migrate dashboard metrics to use real currentFootprint data
   const [carbonBalance] = useState(calculateCarbonBalance());
   const [impactMetrics] = useState(getRealTimeImpactMetrics());
 
+  // Calculate remaining emissions after offsets
   const remainingEmissions = Math.max(0, carbonBalance.grossEmissions - carbonBalance.scnOffsets, 0);
   const offsetCost = remainingEmissions * 25;
 

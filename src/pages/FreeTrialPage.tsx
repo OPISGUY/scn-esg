@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Leaf, Recycle, Zap, Shield, TrendingUp, FileText, BarChart3, Sparkles } from 'lucide-react';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import { buildApiUrl } from '../utils/api';
 
 /**
  * FreeTrialPage - Dedicated marketing landing page for the Free tier
@@ -16,7 +17,7 @@ export default function FreeTrialPage() {
 
   const handleOnboardingComplete = async (userData: any) => {
     try {
-      const response = await fetch('/api/v1/auth/register/', {
+      const response = await fetch(buildApiUrl('/api/v1/users/auth/register/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

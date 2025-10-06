@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Zap, Car, Building, Save, ArrowRight, Upload, AlertCircle, CheckCircle } from 'lucide-react';
 import { calculateCO2FromElectricity, calculateCO2FromFuel, calculateScope3Simplified } from '../utils/calculations';
-import { carbonService } from '../services/carbonService';
 import { useAuth } from '../contexts/AuthContext';
+import { useCarbonFootprint } from '../contexts/CarbonFootprintContext';
 
 interface CarbonCalculatorProps {
   onViewChange: (view: string) => void;
@@ -10,10 +10,12 @@ interface CarbonCalculatorProps {
 
 const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => {
   const { user } = useAuth();
+  const { currentFootprint, createFootprint, updateFootprint, isCreating, isUpdating } = useCarbonFootprint();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  
+  const isSaving = isCreating || isUpdating;
   const [formData, setFormData] = useState({
     // Company Info
     companyName: '',
@@ -57,55 +59,35 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
 
   // Load existing footprint data on component mount
   useEffect(() => {
-    const loadExistingData = async () => {
-      if (!user) {
-        return;
+    if (!user) {
+      return;
+    }
+
+    // Pre-populate from currentFootprint if available
+    if (currentFootprint) {
+      setFormData(prev => ({
+        ...prev,
+        companyName: currentFootprint.company_data?.name || user.company || '',
+        reportingPeriod: currentFootprint.reporting_period || new Date().getFullYear().toString(),
+      }));
+
+      // If there's data, show results
+      if (currentFootprint.scope1_emissions || currentFootprint.scope2_emissions || currentFootprint.scope3_emissions) {
+        setResults({
+          scope1: Number(currentFootprint.scope1_emissions) || 0,
+          scope2: Number(currentFootprint.scope2_emissions) || 0,
+          scope3: Number(currentFootprint.scope3_emissions) || 0,
+          total: Number(currentFootprint.total_emissions) || 0,
+        });
       }
-
-      try {
-        // Try to get the most recent footprint
-        const footprints = await carbonService.getFootprints();
-        
-        if (footprints && footprints.length > 0) {
-          const latest = footprints[0];
-          
-          // Pre-populate company info
-          setFormData(prev => ({
-            ...prev,
-            companyName: user.company || '',
-            reportingPeriod: latest.reporting_period || new Date().getFullYear().toString(),
-          }));
-
-          // If there's data, calculate and show results
-          if (latest.scope1_emissions || latest.scope2_emissions || latest.scope3_emissions) {
-            setResults({
-              scope1: Number(latest.scope1_emissions) || 0,
-              scope2: Number(latest.scope2_emissions) || 0,
-              scope3: Number(latest.scope3_emissions) || 0,
-              total: Number(latest.total_emissions) || 0,
-            });
-          }
-        } else {
-          // No existing footprints, just pre-fill company name
-          setFormData(prev => ({
-            ...prev,
-            companyName: user.company || '',
-          }));
-        }
-      } catch (error) {
-        console.error('Failed to load existing footprint:', error);
-        // Still pre-fill what we can
-        setFormData(prev => ({
-          ...prev,
-          companyName: user.company || '',
-        }));
-      } finally {
-        // Data loading complete
-      }
-    };
-
-    loadExistingData();
-  }, [user]);
+    } else {
+      // No existing footprints, just pre-fill company name
+      setFormData(prev => ({
+        ...prev,
+        companyName: user.company || '',
+      }));
+    }
+  }, [user, currentFootprint]);
 
   const handleFileUpload = (type: 'electricity' | 'gas' | 'fuel', event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -170,26 +152,35 @@ const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ onViewChange }) => 
       return;
     }
 
-    setIsSaving(true);
     setSaveError(null);
     setSaveSuccess(false);
 
     try {
-      await carbonService.createFootprint({
-        reporting_period: formData.reportingPeriod,
-        scope1_emissions: results.scope1,
-        scope2_emissions: results.scope2,
-        scope3_emissions: results.scope3,
-        status: 'draft'
-      });
+      if (currentFootprint?.id) {
+        // Update existing footprint
+        await updateFootprint(currentFootprint.id, {
+          reporting_period: formData.reportingPeriod,
+          scope1_emissions: results.scope1,
+          scope2_emissions: results.scope2,
+          scope3_emissions: results.scope3,
+          status: 'draft'
+        });
+      } else {
+        // Create new footprint
+        await createFootprint({
+          reporting_period: formData.reportingPeriod,
+          scope1_emissions: results.scope1,
+          scope2_emissions: results.scope2,
+          scope3_emissions: results.scope3,
+          status: 'draft'
+        });
+      }
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000); // Reset after 3 seconds
     } catch (error) {
       console.error('Failed to save footprint:', error);
       setSaveError(error instanceof Error ? error.message : 'Failed to save footprint');
-    } finally {
-      setIsSaving(false);
     }
   };
 

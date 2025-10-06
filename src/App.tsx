@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { HelpProvider } from './contexts/HelpContext';
+import { CarbonFootprintProvider } from './contexts/CarbonFootprintContext';
 import LandingPage from './components/landing/LandingPage';
 import FreeTrialPage from './pages/FreeTrialPage';
 import AboutPage from './pages/AboutPage';
@@ -172,9 +173,11 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <HelpProvider>
-        <AppContent />
-      </HelpProvider>
+      <CarbonFootprintProvider>
+        <HelpProvider>
+          <AppContent />
+        </HelpProvider>
+      </CarbonFootprintProvider>
     </AuthProvider>
   );
 }

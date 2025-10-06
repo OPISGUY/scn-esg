@@ -67,7 +67,17 @@ const CSRDCompliance: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(buildApiUrl('/api/v1/compliance/esrs-datapoints/'));
+      const token = localStorage.getItem('access_token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(buildApiUrl('/compliance/esrs-datapoints/'), {
+        headers,
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -85,7 +95,17 @@ const CSRDCompliance: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(buildApiUrl('/api/v1/compliance/assessments/'));
+      const token = localStorage.getItem('access_token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(buildApiUrl('/compliance/assessments/'), {
+        headers,
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -103,7 +123,17 @@ const CSRDCompliance: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(buildApiUrl('/api/v1/compliance/regulatory-updates/'));
+      const token = localStorage.getItem('access_token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(buildApiUrl('/compliance/regulatory-updates/'), {
+        headers,
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

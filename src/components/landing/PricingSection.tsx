@@ -41,7 +41,7 @@ const PricingSection: React.FC = () => {
     try {
       if (selectedTier === 'free') {
         // FREE tier: Create account directly without payment
-        const response = await fetch(buildApiUrl('/api/v1/auth/register/'), {
+        const response = await fetch(buildApiUrl('/api/v1/users/auth/register/'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

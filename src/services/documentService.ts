@@ -151,7 +151,7 @@ class DocumentService {
       formData.append('footprint_id', request.footprint_id);
     }
 
-    const response = await fetch(buildApiUrl('/carbon/ai/upload-document/'), {
+    const response = await fetch(buildApiUrl('/api/v1/carbon/ai/upload-document/'), {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: formData,
@@ -169,7 +169,7 @@ class DocumentService {
    * Get document details with extraction results
    */
   async getDocument(documentId: string): Promise<UploadedDocument> {
-    const response = await fetch(buildApiUrl(`/carbon/ai/documents/${documentId}/`), {
+    const response = await fetch(buildApiUrl(`/api/v1/carbon/ai/documents/${documentId}/`), {
       method: 'GET',
       headers: {
         ...this.getAuthHeaders(),
@@ -192,7 +192,7 @@ class DocumentService {
     documentId: string,
     request: ValidateDocumentRequest
   ): Promise<ValidateDocumentResponse> {
-    const response = await fetch(buildApiUrl(`/carbon/ai/documents/${documentId}/validate/`), {
+    const response = await fetch(buildApiUrl(`/api/v1/carbon/ai/documents/${documentId}/validate/`), {
       method: 'POST',
       headers: {
         ...this.getAuthHeaders(),
@@ -216,7 +216,7 @@ class DocumentService {
     documentId: string,
     request: ApplyDocumentRequest = {}
   ): Promise<ApplyDocumentResponse> {
-    const response = await fetch(buildApiUrl(`/carbon/ai/documents/${documentId}/apply/`), {
+    const response = await fetch(buildApiUrl(`/api/v1/carbon/ai/documents/${documentId}/apply/`), {
       method: 'POST',
       headers: {
         ...this.getAuthHeaders(),

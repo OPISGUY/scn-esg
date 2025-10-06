@@ -11,6 +11,8 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
+import { buildApiUrl } from '../utils/api';
+import { useCarbonFootprint } from '../contexts/CarbonFootprintContext';
 
 interface ValidationResult {
   validation_score: number;
@@ -75,7 +77,7 @@ const AIInsights: React.FC = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`https://scn-esg-backend.onrender.com/api/v1/carbon/ai/${endpoint}/`, {
+      const response = await fetch(buildApiUrl(`/api/v1/carbon/ai/${endpoint}/`), {
         method: data ? 'POST' : 'GET',
         headers,
         body: data ? JSON.stringify(data) : undefined,
@@ -93,14 +95,26 @@ const AIInsights: React.FC = () => {
     }
   };
 
+  const { currentFootprint } = useCarbonFootprint();
+
   const validateData = async () => {
     setLoading(prev => ({ ...prev, validation: true }));
     setError(null);
     
     try {
-      // Get the latest footprint for the user (in a real app, this would come from props or state)
-      // For now, we'll try to call the API and it will use company data
-      const result = await callAIService('validate', {});
+      if (!currentFootprint) {
+        throw new Error('No carbon footprint data available. Please calculate your emissions first.');
+      }
+
+      // Send current footprint data to AI for validation
+      const result = await callAIService('validate', {
+        footprint_id: currentFootprint.id,
+        scope1: currentFootprint.scope1_emissions,
+        scope2: currentFootprint.scope2_emissions,
+        scope3: currentFootprint.scope3_emissions,
+        total: currentFootprint.total_emissions
+      });
+      
       if (result && typeof result === 'object') {
         setValidationResult(result);
       } else {

@@ -1,105 +1,52 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FileText, Download, Calendar, BarChart3, TrendingUp, Users, Scale, CheckCircle, AlertCircle, FileSpreadsheet, FileDown } from 'lucide-react';
 import { mockImpactMetrics, mockEwasteEntries, calculateCarbonBalance } from '../data/mockData';
 import { pdfService, ReportData } from '../services/pdfService';
-import { carbonService, CarbonFootprintData } from '../services/carbonService';
 import { useAuth } from '../contexts/AuthContext';
+import { useCarbonFootprint } from '../contexts/CarbonFootprintContext';
 import { EmissionsCharts } from './EmissionsCharts';
 import { exportToCSV, exportDetailedReport } from '../utils/exportUtils';
 
 const Reports = () => {
   const { user } = useAuth();
+  const { currentFootprint, footprints, isLoading } = useCarbonFootprint();
   const [selectedReport, setSelectedReport] = useState('ghg-protocol');
   const [startDate, setStartDate] = useState('2024-01-01');
   const [endDate, setEndDate] = useState('2024-12-31');
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastGenerated, setLastGenerated] = useState<string | null>(null);
-  const [footprints, setFootprints] = useState<CarbonFootprintData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const carbonBalance = calculateCarbonBalance();
 
-  // Fetch user's carbon footprints on mount
-  useEffect(() => {
-    const fetchFootprints = async () => {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        const data = await carbonService.getFootprints();
-        setFootprints(data);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to load footprints:', err);
-        setError('Failed to load carbon footprint data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFootprints();
-  }, [user]);
-
-  // Get the most recent footprint or fallback to localStorage or defaults
-  const getCurrentFootprint = () => {
-    if (footprints.length > 0) {
-      const latest = footprints[0];
-      return {
-        companyName: user?.company || user?.first_name + ' ' + user?.last_name || user?.email?.split('@')[0] || 'Your Company',
-        scope1: latest.scope1_emissions,
-        scope2: latest.scope2_emissions,
-        scope3: latest.scope3_emissions,
-        total: latest.total_emissions || (latest.scope1_emissions + latest.scope2_emissions + latest.scope3_emissions)
-      };
-    }
-
-    // Fallback to localStorage
-    const stored = localStorage.getItem('carbonFootprint');
-    if (stored) {
-      try {
-        const data = JSON.parse(stored);
-        return {
-          companyName: data.companyName || user?.company || 'Your Company',
-          scope1: data.scope1 || 0,
-          scope2: data.scope2 || 0,
-          scope3: data.scope3 || 0,
-          total: data.total || 0
-        };
-      } catch {
-        // ignore parse errors
-      }
-    }
-
-    // Final fallback to zeros
-    return {
-      companyName: user?.company || user?.email?.split('@')[0] || 'Your Company',
-      scope1: 0,
-      scope2: 0,
-      scope3: 0,
-      total: 0
-    };
+  // Build display footprint from context data
+  const displayFootprint = currentFootprint ? {
+    companyName: currentFootprint.company_data?.name || user?.company || user?.first_name + ' ' + user?.last_name || user?.email?.split('@')[0] || 'Your Company',
+    scope1: currentFootprint.scope1_emissions,
+    scope2: currentFootprint.scope2_emissions,
+    scope3: currentFootprint.scope3_emissions,
+    total: currentFootprint.total_emissions || (currentFootprint.scope1_emissions + currentFootprint.scope2_emissions + currentFootprint.scope3_emissions)
+  } : {
+    companyName: user?.company || user?.email?.split('@')[0] || 'Your Company',
+    scope1: 0,
+    scope2: 0,
+    scope3: 0,
+    total: 0
   };
-
-  const currentFootprint = getCurrentFootprint();
 
   const generatePDFReport = async () => {
     setIsGenerating(true);
     try {
       const reportData: ReportData = {
-        companyName: currentFootprint.companyName,
+        companyName: displayFootprint.companyName,
         reportingPeriod: { start: startDate, end: endDate },
         carbonFootprint: {
-          id: footprints[0]?.id || 'temp-' + Date.now(),
-          companyName: currentFootprint.companyName,
+          id: currentFootprint?.id || 'temp-' + Date.now(),
+          companyName: displayFootprint.companyName,
           reportingPeriod: startDate,
-          scope1: currentFootprint.scope1,
-          scope2: currentFootprint.scope2,
-          scope3: currentFootprint.scope3,
-          total: currentFootprint.total,
+          scope1: displayFootprint.scope1,
+          scope2: displayFootprint.scope2,
+          scope3: currentFootprint?.scope3_emissions || 0,
+          total: currentFootprint?.total_emissions || 0,
           createdAt: footprints[0]?.created_at || new Date().toISOString(),
           status: (footprints[0]?.status as 'draft' | 'submitted' | 'verified') || 'draft'
         },
@@ -185,16 +132,6 @@ const Reports = () => {
         </div>
       )}
 
-      {error && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center space-x-3">
-          <AlertCircle className="w-5 h-5 text-amber-600" />
-          <div>
-            <p className="text-amber-800 font-medium">{error}</p>
-            <p className="text-amber-700 text-sm mt-1">Using local data for report generation</p>
-          </div>
-        </div>
-      )}
-
       {/* Data Visualizations */}
       {!isLoading && user && footprints.length > 0 && (
         <>
@@ -210,14 +147,14 @@ const Reports = () => {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
-                onClick={() => exportToCSV(footprints, `${currentFootprint.companyName}-carbon-footprints`)}
+                onClick={() => exportToCSV(footprints, `${currentFootprint?.company_data?.name || user?.email || 'company'}-carbon-footprints`)}
                 className="flex items-center justify-center space-x-3 px-6 py-4 bg-green-50 hover:bg-green-100 text-green-700 font-medium rounded-lg border-2 border-green-200 hover:border-green-300 transition-all"
               >
                 <FileSpreadsheet className="w-5 h-5" />
                 <span>Export to CSV</span>
               </button>
               <button
-                onClick={() => exportDetailedReport(footprints, currentFootprint.companyName, 'detailed-emissions-report')}
+                onClick={() => exportDetailedReport(footprints, currentFootprint?.company_data?.name || user?.email || 'Company', 'detailed-emissions-report')}
                 className="flex items-center justify-center space-x-3 px-6 py-4 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg border-2 border-blue-200 hover:border-blue-300 transition-all"
               >
                 <FileDown className="w-5 h-5" />
@@ -345,7 +282,7 @@ const Reports = () => {
                 <div className="text-sm text-gray-600 space-y-2">
                   <div className="flex justify-between">
                     <span>Company:</span>
-                    <span className="font-medium">{currentFootprint.companyName}</span>
+                    <span className="font-medium">{currentFootprint?.company_data?.name || user?.email || 'Company'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Period:</span>
@@ -353,7 +290,7 @@ const Reports = () => {
                   </div>
                   <div className="flex justify-between">
                     <span>Total Emissions:</span>
-                    <span className="font-medium">{currentFootprint.total.toFixed(1)} tCO₂e</span>
+                    <span className="font-medium">{(currentFootprint?.total_emissions || 0).toFixed(1)} tCO₂e</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Net Emissions:</span>
@@ -413,12 +350,12 @@ const Reports = () => {
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
             <h3 className="text-lg font-semibold text-green-800 mb-2">Carbon Footprint</h3>
             <div className="text-3xl font-bold text-green-600 mb-2">
-              {currentFootprint.total.toFixed(1)} tCO₂e
+              {(currentFootprint?.total_emissions || 0).toFixed(1)} tCO₂e
             </div>
             <div className="text-sm text-green-700">
-              Scope 1: {currentFootprint.scope1.toFixed(1)} • 
-              Scope 2: {currentFootprint.scope2.toFixed(1)} • 
-              Scope 3: {currentFootprint.scope3.toFixed(1)}
+              Scope 1: {(currentFootprint?.scope1_emissions || 0).toFixed(1)} • 
+              Scope 2: {(currentFootprint?.scope2_emissions || 0).toFixed(1)} • 
+              Scope 3: {(currentFootprint?.scope3_emissions || 0).toFixed(1)}
             </div>
           </div>
 

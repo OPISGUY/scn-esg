@@ -4,6 +4,7 @@ import SocialProofSection from './SocialProofSection';
 import ProblemSolutionSection from './ProblemSolutionSection';
 import GreenCommitmentSection from './GreenCommitmentSection';
 import FeaturesShowcase from './FeaturesShowcase';
+import DataImportSection from './DataImportSection';
 import PricingSection from './PricingSection';
 import HowItWorksSection from './HowItWorksSection';
 import IntegrationsSection from './IntegrationsSection';
@@ -21,6 +22,7 @@ const LandingPage: React.FC = () => {
       <GreenCommitmentSection />
       <ProblemSolutionSection />
       <FeaturesShowcase />
+      <DataImportSection />
       <PricingSection />
       <HowItWorksSection />
       <IntegrationsSection />
