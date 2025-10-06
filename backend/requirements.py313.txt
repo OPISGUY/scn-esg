@@ -29,9 +29,13 @@ redis==5.0.1
 pandas>=2.2.2
 openpyxl==3.1.5
 numpy>=1.26.4
+PyMuPDF>=1.24.0
 
 # AI Services
 google-generativeai==0.8.3
+
+# Payment Integration
+stripe==11.1.0
 
 # External Platform Integrations
 cryptography>=41.0.0

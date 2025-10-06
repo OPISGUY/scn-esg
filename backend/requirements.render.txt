@@ -29,16 +29,20 @@ redis==5.0.1
 pandas==2.2.0
 openpyxl==3.1.5
 numpy==1.26.0
+PyMuPDF>=1.24.0
 
 # AI Services
 google-generativeai==0.8.3
+
+# Payment Integration
+stripe==11.1.0
 
 # External Platform Integrations
 cryptography>=41.0.0
 requests>=2.31.0
 
-# Monitoring (optional for free tier)
-# sentry-sdk==1.39.1
+# Monitoring
+sentry-sdk==1.39.1
 
 # Additional Render optimizations
 python-dotenv==1.0.0
