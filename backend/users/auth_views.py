@@ -156,6 +156,7 @@ def logout(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def profile(request):
     """Get user profile"""
     return Response({
