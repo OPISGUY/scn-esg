@@ -28,10 +28,11 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class SubscriptionTierViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet for listing subscription tiers"""
+    """ViewSet for listing subscription tiers - PUBLIC endpoint"""
     queryset = SubscriptionTier.objects.filter(is_active=True)
     serializer_class = SubscriptionTierSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []  # Explicitly disable authentication for this endpoint
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
