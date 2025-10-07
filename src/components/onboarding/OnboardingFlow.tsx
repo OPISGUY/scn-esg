@@ -24,6 +24,8 @@ export interface UserData {
   companySize: string;
   industry: string;
   phone?: string;
+  password: string;
+  confirmPassword: string;
 }
 
 export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
@@ -42,10 +44,13 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
     companySize: '',
     industry: '',
     phone: '',
+    password: '',
+    confirmPassword: '',
   });
   const [errors, setErrors] = useState<Partial<UserData>>({});
 
-  const totalSteps = selectedTier === 'enterprise' ? 3 : 2;
+  const requiresPasswordStep = selectedTier !== 'enterprise';
+  const totalSteps = requiresPasswordStep ? 3 : 3;
 
   const validateStep = (currentStep: number): boolean => {
     const newErrors: Partial<UserData> = {};
@@ -64,6 +69,20 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
       if (!userData.companyName.trim()) newErrors.companyName = 'Company name is required';
       if (!userData.companySize) newErrors.companySize = 'Please select company size';
       if (!userData.industry) newErrors.industry = 'Please select an industry';
+    }
+
+    if (currentStep === 3 && requiresPasswordStep) {
+      if (!userData.password) {
+        newErrors.password = 'Password is required';
+      } else if (userData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      }
+
+      if (!userData.confirmPassword) {
+        newErrors.confirmPassword = 'Please confirm your password';
+      } else if (userData.password !== userData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
     }
 
     setErrors(newErrors);
@@ -341,7 +360,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
               </motion.div>
             )}
 
-            {step === 3 && selectedTier === 'enterprise' && (
+            {step === 3 && (
               <motion.div
                 key="step3"
                 initial={{ opacity: 0, x: 20 }}
@@ -349,25 +368,83 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-4"
               >
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  Enterprise Contact
-                </h3>
+                {requiresPasswordStep ? (
+                  <>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">
+                      Secure your account
+                    </h3>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-800">
-                    <strong>Thank you for your interest in our Enterprise plan!</strong>
-                  </p>
-                  <p className="text-sm text-blue-700 mt-2">
-                    Our sales team will contact you shortly to discuss:
-                  </p>
-                  <ul className="text-sm text-blue-700 mt-2 ml-4 list-disc">
-                    <li>Custom pricing based on your team size</li>
-                    <li>Dedicated account manager</li>
-                    <li>White-label options</li>
-                    <li>API access and integrations</li>
-                    <li>Priority support and training</li>
-                  </ul>
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Password *
+                      </label>
+                      <input
+                        type="password"
+                        value={userData.password}
+                        onChange={(e) => updateUserData('password', e.target.value)}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                          errors.password ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="Create a secure password"
+                      />
+                      {errors.password && (
+                        <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Must be at least 8 characters long
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Confirm Password *
+                      </label>
+                      <input
+                        type="password"
+                        value={userData.confirmPassword}
+                        onChange={(e) => updateUserData('confirmPassword', e.target.value)}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                          errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="Re-enter your password"
+                      />
+                      {errors.confirmPassword && (
+                        <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+                      )}
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-blue-800">
+                        <strong>Keep your Verdant account secure.</strong>
+                      </p>
+                      <p className="text-sm text-blue-700 mt-2">
+                        You'll use these credentials to sign in once your plan is ready.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4">
+                      Enterprise Contact
+                    </h3>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-blue-800">
+                        <strong>Thank you for your interest in our Enterprise plan!</strong>
+                      </p>
+                      <p className="text-sm text-blue-700 mt-2">
+                        Our sales team will contact you shortly to discuss:
+                      </p>
+                      <ul className="text-sm text-blue-700 mt-2 ml-4 list-disc">
+                        <li>Custom pricing based on your team size</li>
+                        <li>Dedicated account manager</li>
+                        <li>White-label options</li>
+                        <li>API access and integrations</li>
+                        <li>Priority support and training</li>
+                      </ul>
+                    </div>
+                  </>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

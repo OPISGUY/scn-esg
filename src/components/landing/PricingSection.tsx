@@ -4,12 +4,14 @@ import { CurrencySelector, convertPrice, getCurrencySymbol } from './CurrencySel
 import { OnboardingFlow, UserData } from '../onboarding/OnboardingFlow';
 import { getStripe } from '../../services/stripe';
 import { buildApiUrl } from '../../utils/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const PricingSection: React.FC = () => {
   const [currency, setCurrency] = useState('GBP');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedTier, setSelectedTier] = useState<'free' | 'starter' | 'professional' | 'enterprise'>('free');
   const [, setIsProcessing] = useState(false);
+  const { register: registerUser, login, logout } = useAuth();
 
   const basePrices = {
     free: 0,
@@ -37,72 +39,69 @@ const PricingSection: React.FC = () => {
 
   const handleOnboardingComplete = async (userData: UserData) => {
     setIsProcessing(true);
-    
-    try {
-      if (selectedTier === 'free') {
-        // FREE tier: Create account directly without payment
-        const response = await fetch(buildApiUrl('/api/v1/users/auth/register/'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: userData.email,
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            company_name: userData.companyName,
-            company_size: userData.companySize,
-            industry: userData.industry,
-            phone: userData.phone,
-            tier: 'free',
-          }),
-        });
 
-        if (!response.ok) throw new Error('Registration failed');
-        
-        // Redirect to login with success message
+    try {
+      try {
+        await registerUser({
+          email: userData.email,
+          password: userData.password,
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          company: userData.companyName,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Registration failed';
+        if (message.toLowerCase().includes('already exists')) {
+          await login(userData.email, userData.password);
+        } else {
+          throw new Error(message);
+        }
+      }
+
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        throw new Error('Authentication failed. Please try again.');
+      }
+
+      if (selectedTier === 'free') {
+        logout();
         window.location.href = '/login?registered=true';
         return;
       }
 
-      // Paid tiers: Create Stripe checkout session
       const stripe = await getStripe();
       if (!stripe) throw new Error('Stripe failed to initialize');
 
-      // First, fetch available tiers to get the database ID
-  const tiersResponse = await fetch(buildApiUrl('/api/v1/subscriptions/tiers/public/'));
+      const tiersResponse = await fetch(buildApiUrl('/api/v1/subscriptions/tiers/public/'));
       if (!tiersResponse.ok) throw new Error('Failed to fetch subscription tiers');
       const tiers = await tiersResponse.json();
-      
-      // Find the tier ID that matches our selected tier name
+
       const tier = tiers.find((t: any) => t.tier.toLowerCase() === selectedTier.toLowerCase());
       if (!tier) throw new Error(`Tier '${selectedTier}' not found`);
 
       const response = await fetch(buildApiUrl('/api/v1/subscriptions/create_checkout_session/'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
-          tier_id: tier.id,  // Use the database ID, not the string name
-          currency: currency.toLowerCase(),
+          tier_id: tier.id,
+          currency: currency.toUpperCase(),
           billing_cycle: 'monthly',
           success_url: `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${window.location.origin}/checkout/cancelled`,
-          // Include user data for account creation
-          customer_email: userData.email,
-          metadata: {
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            company_name: userData.companyName,
-            company_size: userData.companySize,
-            industry: userData.industry,
-            phone: userData.phone,
-          },
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to create checkout session');
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        const serverMessage = errorBody.error || errorBody.detail || 'Failed to create checkout session';
+        throw new Error(serverMessage);
+      }
 
       const data = await response.json();
-      
-      // Redirect to Stripe Checkout
+
       if (data.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
@@ -110,7 +109,8 @@ const PricingSection: React.FC = () => {
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      alert('Something went wrong. Please try again.');
+      const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      alert(message);
       setIsProcessing(false);
     }
   };
