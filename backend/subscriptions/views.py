@@ -2,7 +2,7 @@
 Subscription Views and API Endpoints
 """
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.views.decorators.csrf import csrf_exempt
@@ -33,6 +33,16 @@ class SubscriptionTierViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SubscriptionTierSerializer
     permission_classes = [AllowAny]
     authentication_classes = []  # Explicitly disable authentication for this endpoint
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def public_subscription_tiers(request):
+    """Return active subscription tiers without requiring authentication."""
+    tiers = SubscriptionTier.objects.filter(is_active=True).order_by('sort_order', 'base_price_gbp')
+    serializer = SubscriptionTierSerializer(tiers, many=True)
+    return Response(serializer.data)
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):

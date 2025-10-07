@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="350" viewBox="0 0 300 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M150 115 C130 115, 115 130, 115 150 C115 165, 125 178, 140 185 L150 190 L150 115Z" stroke="#059669" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M150 115 C170 115, 185 130, 185 150 C185 165, 175 178, 160 185 L150 190 L150 115Z" stroke="#10b981" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="150" y1="115" x2="150" y2="190" stroke="#047857" stroke-width="3"/>
+  <text x="150" y="230" text-anchor="middle" font-size="32" font-weight="600" fill="#059669" font-family="system-ui, -apple-system, sans-serif">Verdant</text>
+  <text x="205" y="230" font-size="16" font-weight="500" fill="#717182" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.1em">SCN</text>
+</svg>

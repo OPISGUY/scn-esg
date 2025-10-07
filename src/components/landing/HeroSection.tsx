@@ -24,7 +24,11 @@ const HeroSection: React.FC = () => {
           <div className="flex justify-between items-center py-8">
             {/* Logo */}
             <div className="flex items-center">
-              <span className="text-2xl font-bold text-white">Verdant By SCN</span>
+              <img 
+                src="/verdant-logo-horizontal.svg" 
+                alt="Verdant By SCN" 
+                className="h-10"
+              />
             </div>
             
             {/* Desktop Navigation Links */}

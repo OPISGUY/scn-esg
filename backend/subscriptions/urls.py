@@ -6,6 +6,7 @@ from .views import (
     TransactionViewSet,
     create_carbon_credit_payment,
     stripe_webhook,
+    public_subscription_tiers,
 )
 
 router = DefaultRouter()
@@ -14,6 +15,7 @@ router.register(r'subscriptions', SubscriptionViewSet, basename='subscription')
 router.register(r'transactions', TransactionViewSet, basename='transaction')
 
 urlpatterns = [
+    path('tiers/public/', public_subscription_tiers, name='public-subscription-tiers'),
     path('', include(router.urls)),
     path('carbon-credits/create-payment/', create_carbon_credit_payment, name='carbon-credit-payment'),
     path('webhooks/stripe/', stripe_webhook, name='stripe-webhook'),

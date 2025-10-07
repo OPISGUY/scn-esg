@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="350" viewBox="0 0 300 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="150" cy="150" r="48" fill="#10b981" opacity="0.1" />
+  <path d="M150 120 C135 120, 125 130, 125 145 C125 155, 130 165, 140 170 L150 175 L150 120Z" fill="#059669"/>
+  <path d="M150 120 C165 120, 175 130, 175 145 C175 155, 170 165, 160 170 L150 175 L150 120Z" fill="#10b981"/>
+  <rect x="148" y="135" width="4" height="45" fill="#047857" rx="2"/>
+  <path d="M150 130 L145 135 M150 130 L155 135" stroke="#047857" stroke-width="3" stroke-linecap="round"/>
+  <text x="150" y="210" text-anchor="middle" font-size="32" font-weight="600" fill="#059669" font-family="system-ui, -apple-system, sans-serif">Verdant</text>
+  <text x="150" y="230" text-anchor="middle" font-size="14" font-weight="500" fill="#717182" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.1em">BY SCN</text>
+</svg>

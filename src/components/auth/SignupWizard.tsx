@@ -505,8 +505,12 @@ const SignupWizard: React.FC<SignupWizardProps> = ({ onSwitchToLogin, onComplete
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-6 shadow-lg">
-            <Leaf className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center mb-6">
+            <img 
+              src="/verdant-icon.svg" 
+              alt="Verdant Logo" 
+              className="w-16 h-16"
+            />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Verdant By SCN</h1>
           <p className="text-gray-600">Create your account in just a few steps</p>

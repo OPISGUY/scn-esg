@@ -114,7 +114,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           >
             {/* Menu Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <span className="text-2xl font-bold text-green-600">Verdant By SCN</span>
+              <img 
+                src="/verdant-logo-horizontal.svg" 
+                alt="Verdant By SCN" 
+                className="h-8"
+              />
               <button
                 onClick={onClose}
                 className="p-2 rounded-lg hover:bg-gray-100 transition"

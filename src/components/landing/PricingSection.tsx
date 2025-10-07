@@ -68,7 +68,7 @@ const PricingSection: React.FC = () => {
       if (!stripe) throw new Error('Stripe failed to initialize');
 
       // First, fetch available tiers to get the database ID
-      const tiersResponse = await fetch(buildApiUrl('/api/v1/subscriptions/tiers/'));
+  const tiersResponse = await fetch(buildApiUrl('/api/v1/subscriptions/tiers/public/'));
       if (!tiersResponse.ok) throw new Error('Failed to fetch subscription tiers');
       const tiers = await tiersResponse.json();
       

@@ -75,9 +75,11 @@ const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
-            <span className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-              Verdant By SCN
-            </span>
+            <img 
+              src="/verdant-logo-horizontal.svg" 
+              alt="Verdant By SCN" 
+              className="h-8 mb-3"
+            />
             <p className="text-sm text-gray-500 mt-1">
               © 2025 Verdant By SCN. All rights reserved.
             </p>

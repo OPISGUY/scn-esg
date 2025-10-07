@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Mail, AlertCircle, Leaf } from 'lucide-react';
+import { CheckCircle, Mail, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface EmailVerificationPageProps {
@@ -97,8 +97,12 @@ const EmailVerificationPage: React.FC<EmailVerificationPageProps> = ({
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl mb-6 shadow-lg">
-            <Leaf className="h-8 w-8 text-white" />
+          <div className="inline-flex items-center justify-center mb-6">
+            <img 
+              src="/verdant-icon.svg" 
+              alt="Verdant Logo" 
+              className="w-16 h-16"
+            />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Verify Your Email

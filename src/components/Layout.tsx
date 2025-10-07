@@ -75,11 +75,13 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onViewChange }) 
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                  <Leaf className="w-6 h-6 text-white" />
-                </div>
+                <img 
+                  src="/verdant-icon.svg" 
+                  alt="Verdant Logo" 
+                  className="w-10 h-10"
+                />
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">SCN Platform</h1>
+                  <h1 className="text-xl font-bold text-gray-900">Verdant By SCN</h1>
                   <p className="text-xs text-gray-500">Sustainable Compute Network</p>
                 </div>
               </div>

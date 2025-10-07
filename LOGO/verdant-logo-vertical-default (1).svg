@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="350" viewBox="0 0 300 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="150" cy="150" r="45" fill="#10b981" opacity="0.08" />
+  <path d="M150 115 Q 135 120, 128 135 Q 122 150, 128 165 Q 135 180, 150 185 Q 165 180, 172 165 Q 178 150, 172 135 Q 165 120, 150 115 Z" fill="#10b981"/>
+  <path d="M150 115 Q 165 120, 172 135 Q 178 150, 172 165 Q 165 180, 150 185 L 150 115 Z" fill="#059669" opacity="0.7"/>
+  <path d="M150 120 Q 137 125, 132 138 Q 128 150, 132 162 Q 137 173, 148 178" stroke="#34d399" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <line x1="150" y1="115" x2="150" y2="185" stroke="#047857" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M150 130 Q 140 132, 135 140" stroke="#047857" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M150 145 Q 140 147, 133 155" stroke="#047857" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M150 160 Q 142 162, 138 168" stroke="#047857" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M150 130 Q 160 132, 165 140" stroke="#047857" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M150 145 Q 160 147, 167 155" stroke="#047857" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M150 160 Q 158 162, 162 168" stroke="#047857" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+  <text x="150" y="215" text-anchor="middle" font-size="32" font-weight="600" fill="#059669" font-family="system-ui, -apple-system, sans-serif">Verdant</text>
+  <text x="150" y="235" text-anchor="middle" font-size="14" font-weight="500" fill="#717182" font-family="system-ui, -apple-system, sans-serif" letter-spacing="0.1em">BY SCN</text>
+</svg>

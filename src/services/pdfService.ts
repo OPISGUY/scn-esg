@@ -92,13 +92,12 @@ export class PDFReportService {
   }
 
   private addCoverPage(data: ReportData): void {
-    // SCN Logo placeholder (you can replace with actual logo)
-    this.pdf.setFillColor(51, 65, 85); // slate-700
-    this.pdf.rect(this.margin, 20, 40, 15, 'F');
-    this.pdf.setTextColor(255, 255, 255);
-    this.pdf.setFontSize(14);
+    // Verdant By SCN Logo
+    this.pdf.setFillColor(255, 255, 255); // White background
+    this.pdf.setFontSize(18);
     this.pdf.setFont('helvetica', 'bold');
-    this.pdf.text('SCN', this.margin + 18, 30);
+    this.pdf.setTextColor(34, 197, 94); // Green color
+    this.pdf.text('Verdant By SCN', this.margin, 30);
     
     // Title
     this.pdf.setTextColor(0, 0, 0);
